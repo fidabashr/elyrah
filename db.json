@@ -1,0 +1,549 @@
+{
+  "products": [
+    {
+      "id": "1",
+      "name": "Classic  Abaya",
+      "category": "Classic Abayas",
+      "price": 1899,
+      "description": "Elegant flowing black abaya with a minimal design.",
+      "image": "src/assets/images/classicAbaya.webp",
+      "stock": 8,
+      "rating": 4.8,
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Black"
+      ]
+    },
+    {
+      "id": "2",
+      "name": "Premium Beige Abaya",
+      "category": "Classic Abayas",
+      "price": 2199,
+      "description": "Minimal beige abaya crafted for everyday elegance.",
+      "image": "src/assets/images/beigeAbaya.webp",
+      "stock": 12,
+      "rating": 4.7,
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Beige",
+        "Cream"
+      ]
+    },
+    {
+      "id": "3",
+      "name": "Elegant Open Front Abaya",
+      "category": "Open Abayas",
+      "price": 2499,
+      "description": "Stylish open-front abaya with a relaxed flowing silhouette.",
+      "image": "src/assets/images/frontOpen.webp",
+      "stock": 6,
+      "rating": 4.9,
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Black",
+        "Brown"
+      ]
+    },
+    {
+      "id": "4",
+      "name": "Dotted Open Abaya",
+      "category": "Open Abayas",
+      "price": 2799,
+      "description": "Beautiful open abaya featuring delicate floral embroidery.",
+      "image": "src/assets/images/dotted.webp",
+      "stock": 5,
+      "rating": 4.8,
+      "sizes": [
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Olive",
+        "Black"
+      ]
+    },
+    {
+      "id": "5",
+      "name": "Elegant Maxi Dress",
+      "category": "Maxi Dresses",
+      "price": 1799,
+      "description": "Modest full-length maxi dress with a graceful flowing fit.",
+      "image": "src/assets/images/maxi1.webp",
+      "stock": 10,
+      "rating": 4.7,
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Black",
+        "Navy"
+      ]
+    },
+    {
+      "id": "6",
+      "name": "Floral Printed Maxi Dress",
+      "category": "Maxi Dresses",
+      "price": 1999,
+      "description": "Soft floral maxi dress perfect for casual outings.",
+      "image": "src/assets/images/floral.webp",
+      "stock": 7,
+      "rating": 4.6,
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Pink",
+        "Sage Green"
+      ]
+    },
+    {
+      "id": "7",
+      "name": "yellow stripe Midi Dress",
+      "category": "Midi Dresses",
+      "price": 1599,
+      "description": "Elegant satin midi dress with a sophisticated finish.",
+      "image": "src/assets/images/stripeMidi.webp",
+      "stock": 9,
+      "rating": 4.5,
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "colors": [
+        "Champagne",
+        "Brown"
+      ]
+    },
+    {
+      "id": "8",
+      "name": "Pleated Midi Dress",
+      "category": "Midi Dresses",
+      "price": 1899,
+      "description": "Chic pleated midi dress with long sleeves and a relaxed fit.",
+      "image": "src/assets/images/midi.webp",
+      "stock": 8,
+      "rating": 4.8,
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Mauve",
+        "Black"
+      ]
+    },
+    {
+      "id": "9",
+      "name": "Luxury Princess Gown",
+      "category": "Gowns",
+      "price": 3299,
+      "description": "Beautiful floor-length gown designed for special occasions.",
+      "image": "src/assets/images/LemonGown.webp",
+      "stock": 4,
+      "rating": 4.9,
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "colors": [
+        "Maroon",
+        "Black"
+      ]
+    },
+    {
+      "id": "10",
+      "name": "Floral Gown",
+      "category": "Gowns",
+      "price": 3599,
+      "description": "Elegant floral gown featuring pink roses.",
+      "image": "src/assets/images/floralGown.webp",
+      "stock": 3,
+      "rating": 4.9,
+      "sizes": [
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Champagne",
+        "Dusty Rose"
+      ]
+    },
+    {
+      "id": "15",
+      "name": "white gown",
+      "category": "Gowns",
+      "price": 2299,
+      "description": "Elegant white gown.",
+      "image": "src/assets/images/whiteGown.webp",
+      "stock": 7,
+      "rating": 4.8,
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "colors": [
+        "Champagne",
+        "Chocolate"
+      ]
+    },
+    {
+      "id": "16",
+      "name": "simple gown",
+      "category": "Gowns",
+      "price": 2199,
+      "description": "Simple Elegant white gown.",
+      "image": "src/assets/images/simpleGown.webp",
+      "stock": 9,
+      "rating": 4.7,
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Black",
+        "Dusty Pink"
+      ]
+    },
+    {
+      "id": "17",
+      "name": "Classic Denim  Skirt",
+      "category": "Skirts",
+      "price": 1499,
+      "description": "Stylish full-length denim skirt with a comfortable fit.",
+      "image": "src/assets/images/denim.webp",
+      "stock": 11,
+      "rating": 4.6,
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Blue",
+        "Dark Blue"
+      ]
+    },
+    {
+      "id": "18",
+      "name": "Pretty Maxi Skirt",
+      "category": "Skirts",
+      "price": 1399,
+      "description": "Beautiful mermaid tiered skirt with a soft and flowy silhouette.",
+      "image": "src/assets/images/mermaid.webp",
+      "stock": 8,
+      "rating": 4.7,
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "colors": [
+        "Pink",
+        "Cream"
+      ]
+    },
+    {
+      "id": "20",
+      "name": "white Skirt",
+      "category": "Skirts",
+      "price": 1299,
+      "description": "Modern white maxi skirt designed for effortless everyday styling.",
+      "image": "src/assets/images/whiteSkirt.webp",
+      "stock": 10,
+      "rating": 4.5,
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Beige",
+        "Olive"
+      ]
+    },
+    {
+      "id": "21",
+      "name": " White Shirt",
+      "category": "Shirts",
+      "price": 1199,
+      "description": "Classicwhite shirt with a relaxed modest silhouette.",
+      "image": "src/assets/images/whiteShirt.webp",
+      "stock": 15,
+      "rating": 4.8,
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "White",
+        "Cream"
+      ]
+    },
+    {
+      "id": "22",
+      "name": "Yellow stripe Shirt",
+      "category": "Shirts",
+      "price": 1399,
+      "description": "Oversized yellow stripe shirt .",
+      "image": "src/assets/images/Shirt.webp",
+      "stock": 9,
+      "rating": 4.7,
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Beige",
+        "White"
+      ]
+    },
+    {
+      "id": "23",
+      "name": "Elegant Long Tunic",
+      "category": "Top",
+      "price": 1299,
+      "description": "Comfortable long tunic with a flowy fit and subtle detailing.",
+      "image": "src/assets/images/longTop.webp",
+      "stock": 8,
+      "rating": 4.6,
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Black",
+        "Sage Green"
+      ]
+    },
+    {
+      "id": "24",
+      "name": "Minimal Pleated Blouse",
+      "category": "Top",
+      "price": 1099,
+      "description": "Elegant pleated blouse with long sleeves and a relaxed fit.",
+      "image": "src/assets/images/pleated.webp",
+      "stock": 7,
+      "rating": 4.7,
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "colors": [
+        "Ivory",
+        "Dusty Rose"
+      ]
+    },
+    {
+      "id": "25",
+      "name": "Basic Long Sleeve Top",
+      "category": "Top",
+      "price": 799,
+      "description": "Soft everyday long-sleeve top, perfect for modest layering.",
+      "image": "src/assets/images/yellow.webp",
+      "stock": 14,
+      "rating": 4.5,
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Black",
+        "White",
+        "Brown"
+      ]
+    },
+    {
+      "id": "26",
+      "name": "Elegant Peplum Top",
+      "category": "Top",
+      "price": 1199,
+      "description": "Flowy peplum top with a feminine silhouette and modest coverage.",
+      "image": "src/assets/images/peplum.webp",
+      "stock": 6,
+      "rating": 4.6,
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Mauve",
+        "Cream"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "name": "fida",
+      "email": "fidabashr@gmail.com",
+      "password": "fida5040",
+      "id": "NAYpBUQbOVE",
+      "phone": "9947139682",
+      "address": "Bridgeon solutions,mankav,calicut"
+    },
+    {
+      "name": "ashika",
+      "email": "ashika@gmail.com",
+      "password": "994713",
+      "id": "7oLtsGX6sYk"
+    },
+    {
+      "name": "ashika",
+      "email": "ashi23@gmail.com",
+      "password": "ashika123",
+      "id": "c5XZtcUT-8Q"
+    },
+    {
+      "name": "hani",
+      "email": "hani@gmail.com",
+      "password": "fidahani",
+      "id": "GTMNH0g5Bzw"
+    },
+    {
+      "name": "hari",
+      "email": "hari@gmail.com",
+      "password": "123456",
+      "id": "A8WNd-dDdow"
+    }
+  ],
+  "orders": [
+    {
+      "userId": "NAYpBUQbOVE",
+      "customer": {
+        "name": "fida",
+        "email": "fidabashr@gmail.com",
+        "phone": "7902275040",
+        "address": "fdvxdfbdfvdc",
+        "city": "dsfg",
+        "pincode": "345425"
+      },
+      "items": [
+        {
+          "id": "2",
+          "name": "Premium Beige Abaya",
+          "price": 2199,
+          "image": "src/assets/images/yellow.webp",
+          "size": "S",
+          "color": "Beige",
+          "quantity": 1
+        }
+      ],
+      "totalAmount": 2199,
+      "paymentMethod": "COD",
+      "status": "Pending",
+      "createdAt": "2026-11-07T05:10:59.174Z",
+      "id": "Lajg1-RqQ7Q"
+    },
+    {
+      "userId": "NAYpBUQbOVE",
+      "customer": {
+        "name": "fida",
+        "email": "fidabashr@gmail.com",
+        "phone": "7902275040",
+        "address": "ngcvjgvj",
+        "city": "gjvjgf",
+        "pincode": "670731"
+      },
+      "items": [
+        {
+          "id": "2",
+          "name": "Premium Beige Abaya",
+          "price": 2199,
+          "image": "src/assets/images/beigeAbaya.webp",
+          "size": "M",
+          "color": "Cream",
+          "quantity": 1
+        },
+        {
+          "id": "24",
+          "name": "Minimal Pleated Blouse",
+          "price": 1099,
+          "image": "src/assets/images/pleated.webp",
+          "size": "S",
+          "color": "Dusty Rose",
+          "quantity": 1
+        },
+        {
+          "id": "1",
+          "name": "Classic  Abaya",
+          "price": 1899,
+          "image": "src/assets/images/classicAbaya.webp",
+          "size": "M",
+          "color": "Black",
+          "quantity": 1
+        }
+      ],
+      "totalAmount": 5197,
+      "paymentMethod": "COD",
+      "status": "Pending",
+      "createdAt": "2026-11-09T08:39:49.761Z",
+      "id": "LFs3ZupCLMY"
+    },
+    {
+      "userId": "A8WNd-dDdow",
+      "customerName": "hari",
+      "email": "hari@gmail.com",
+      "phone": "9876543210",
+      "address": "qwertyuiopasdfghjklzxcvbnm",
+      "items": [
+        {
+          "id": "6",
+          "name": "Floral Printed Maxi Dress",
+          "image": "src/assets/images/floral.webp",
+          "price": 1999,
+          "quantity": 2,
+          "size": "M",
+          "color": "Sage Green"
+        }
+      ],
+      "totalAmount": 3998,
+      "paymentMethod": "COD",
+      "status": "Pending",
+      "createdAt": "2026-11-09T11:43:33.460Z",
+      "id": "IMa3A8d2EPo"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
