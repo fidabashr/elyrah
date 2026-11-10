@@ -400,7 +400,7 @@
       "price": 1199,
       "description": "Flowy peplum top with a feminine silhouette and modest coverage.",
       "image": "src/assets/images/peplum.webp",
-      "stock": 6,
+      "stock": 5,
       "rating": 4.6,
       "sizes": [
         "S",
@@ -420,8 +420,8 @@
       "email": "fidabashr@gmail.com",
       "password": "fida5040",
       "id": "NAYpBUQbOVE",
-      "phone": "9947139682",
-      "address": "Bridgeon solutions,mankav,calicut"
+      "phone": "7902275040",
+      "address": "parakkal(H)"
     },
     {
       "name": "ashika",
@@ -543,6 +543,84 @@
       "status": "Pending",
       "createdAt": "2026-11-09T11:43:33.460Z",
       "id": "IMa3A8d2EPo"
+    },
+    {
+      "userId": "NAYpBUQbOVE",
+      "customerName": "fida",
+      "email": "fidabashr@gmail.com",
+      "phone": "7902275040",
+      "address": "hgfcjm",
+      "items": [
+        {
+          "id": "3",
+          "name": "Elegant Open Front Abaya",
+          "image": "src/assets/images/frontOpen.webp",
+          "price": 2499,
+          "quantity": 6,
+          "size": "S",
+          "color": "Black"
+        }
+      ],
+      "totalAmount": 14994,
+      "paymentMethod": "COD",
+      "status": "Cancelled",
+      "createdAt": "2026-11-09T12:49:04.313Z",
+      "id": "tWNW0wy_A7w"
+    },
+    {
+      "userId": "NAYpBUQbOVE",
+      "customerName": "fida",
+      "email": "fidabashr@gmail.com",
+      "phone": "7889767455645545454e",
+      "address": "dsbgddgrbdgd",
+      "items": [
+        {
+          "id": "8",
+          "name": "Pleated Midi Dress",
+          "image": "src/assets/images/midi.webp",
+          "price": 1899,
+          "quantity": 1,
+          "size": "L",
+          "color": "Black"
+        },
+        {
+          "id": "5",
+          "name": "Elegant Maxi Dress",
+          "image": "src/assets/images/maxi1.webp",
+          "price": 1799,
+          "quantity": 10,
+          "size": "M",
+          "color": "Navy"
+        }
+      ],
+      "totalAmount": 19889,
+      "paymentMethod": "COD",
+      "status": "Cancelled",
+      "createdAt": "2026-11-09T13:23:15.171Z",
+      "id": "ugxNhJspX9E"
+    },
+    {
+      "userId": "NAYpBUQbOVE",
+      "customerName": "fida",
+      "email": "fidabashr@gmail.com",
+      "phone": "7902275040",
+      "address": "parakkal(H)",
+      "items": [
+        {
+          "id": "26",
+          "name": "Elegant Peplum Top",
+          "image": "src/assets/images/peplum.webp",
+          "price": 1199,
+          "quantity": 1,
+          "size": "S",
+          "color": "Cream"
+        }
+      ],
+      "totalAmount": 1199,
+      "paymentMethod": "COD",
+      "status": "Pending",
+      "createdAt": "2026-11-10T04:07:22.048Z",
+      "id": "J9uHZcHB1fg"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

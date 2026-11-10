@@ -9,6 +9,8 @@ const user = useSelector((state) => state.auth.user);
 const cartItems = useSelector(
   (state) => state.cart.items
 );
+const wishlist=useSelector((state)=>state.wishlist.items)
+const wishlistCount=wishlist.length
 
 const cartCount = cartItems.length;
 
@@ -44,6 +46,9 @@ function handleLogout() {
             aria-label="Wishlist"
           >
             ♡
+            <span className="ml-1 rounded-full bg-stone-900 px-2 py-1 text-xs text-white">
+    {wishlistCount}
+  </span>
           </Link>
 
           <Link

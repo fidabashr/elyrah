@@ -17,3 +17,20 @@ export async function getProductsById(id) {
 }
  return response.json();
 }
+export async function updateProductStock(id, newStock) {
+  const response = await fetch(`${API_URL}/products/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      stock: newStock,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to update product stock");
+  }
+
+  return response.json();
+}
