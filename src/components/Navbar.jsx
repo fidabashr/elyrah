@@ -1,4 +1,3 @@
-
 import { Link, NavLink } from "react-router-dom";
 import { useSelector,useDispatch } from "react-redux";
 import { logout } from "../redux/slices/authSlice";
@@ -6,12 +5,10 @@ function Navbar() {
 const dispatch = useDispatch();
 
 const user = useSelector((state) => state.auth.user);
-const cartItems = useSelector(
-  (state) => state.cart.items
-);
+const cartItems = useSelector( (state) => state.cart.items);
 const wishlist=useSelector((state)=>state.wishlist.items)
-const wishlistCount=wishlist.length
 
+const wishlistCount=wishlist.length
 const cartCount = cartItems.length;
 
 function handleLogout() {
@@ -19,25 +16,23 @@ function handleLogout() {
 
   localStorage.removeItem("user");
 }
-  const linkStyle = ({ isActive }) =>
+const linkStyle = ({ isActive }) =>
     isActive
       ? "text-stone-900 font-semibold"
       : "text-stone-600 hover:text-black";
-    return(
+
+return(
         <header className="sticky top-0 z-50 bg-white shadow-sm">
             <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-                     <Link
-          to="/"
-          className="text-2xl font-semibold tracking-[0.25em] text-stone-900"
-        >
+        <Link to="/"
+          className="text-2xl font-semibold tracking-[0.25em] text-stone-900">
           ELYRAH
         </Link>
         <nav className="hidden items-center gap-8 md:flex">
-<NavLink to='/' className={linkStyle}>Home</NavLink>
-<NavLink to='/products' className={linkStyle}>Shop</NavLink>
-
-
+         <NavLink to='/' className={linkStyle}>Home</NavLink>
+        <NavLink to='/products' className={linkStyle}>Shop</NavLink> 
         </nav>
+
         <div className="flex items-center gap-5">
 
           <Link
@@ -71,7 +66,7 @@ function handleLogout() {
 </Link>
           {user ? (<div className="flex items-center gap-4">
 
-       <span className="text-sm text-stone-700">Hi, {user.name}</span>
+       {/* <span className="text-sm text-stone-700">Hi, {user.name}</span> */}
 
        <button onClick={handleLogout} className="text-sm text-stone-700 hover:text-black">Logout</button></div>) : (
      <Link to="/login" className="text-sm text-stone-700 hover:text-black">

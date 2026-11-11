@@ -26,7 +26,7 @@
       "price": 2199,
       "description": "Minimal beige abaya crafted for everyday elegance.",
       "image": "src/assets/images/beigeAbaya.webp",
-      "stock": 12,
+      "stock": 10,
       "rating": 4.7,
       "sizes": [
         "S",
@@ -183,7 +183,7 @@
       "price": 3599,
       "description": "Elegant floral gown featuring pink roses.",
       "image": "src/assets/images/floralGown.webp",
-      "stock": 3,
+      "stock": 2,
       "rating": 4.9,
       "sizes": [
         "M",
@@ -421,7 +421,7 @@
       "password": "fida5040",
       "id": "NAYpBUQbOVE",
       "phone": "7902275040",
-      "address": "parakkal(H)"
+      "address": "diva"
     },
     {
       "name": "ashika",
@@ -621,6 +621,61 @@
       "status": "Pending",
       "createdAt": "2026-11-10T04:07:22.048Z",
       "id": "J9uHZcHB1fg"
+    },
+    {
+      "userId": "NAYpBUQbOVE",
+      "customerName": "fida",
+      "email": "fidabashr@gmail.com",
+      "phone": "7902275040",
+      "address": "parshdgav",
+      "items": [
+        {
+          "id": "2",
+          "name": "Premium Beige Abaya",
+          "image": "src/assets/images/beigeAbaya.webp",
+          "price": 2199,
+          "quantity": 1,
+          "size": "S",
+          "color": "Beige"
+        },
+        {
+          "id": "10",
+          "name": "Floral Gown",
+          "image": "src/assets/images/floralGown.webp",
+          "price": 3599,
+          "quantity": 1,
+          "size": "M",
+          "color": "Champagne"
+        }
+      ],
+      "totalAmount": 5798,
+      "paymentMethod": "COD",
+      "status": "Pending",
+      "createdAt": "2026-11-10T10:42:43.203Z",
+      "id": "bVIxKNTnK00"
+    },
+    {
+      "userId": "NAYpBUQbOVE",
+      "customerName": "fida",
+      "email": "fidabashr@gmail.com",
+      "phone": "7902275040",
+      "address": "diva",
+      "items": [
+        {
+          "id": "2",
+          "name": "Premium Beige Abaya",
+          "image": "src/assets/images/beigeAbaya.webp",
+          "price": 2199,
+          "quantity": 1,
+          "size": "S",
+          "color": "Beige"
+        }
+      ],
+      "totalAmount": 2199,
+      "paymentMethod": "COD",
+      "status": "Pending",
+      "createdAt": "2026-11-10T12:06:46.325Z",
+      "id": "2GYutw3ep_w"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

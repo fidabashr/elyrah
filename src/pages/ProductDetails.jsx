@@ -44,7 +44,7 @@ function ProductDetails() {
     );
   }
 
-  // Check whether this selected product variation is already in cart
+  // Check whether this selected product is already in cart
   const isAlreadyInCart = cartItems.some(
     (item) =>
       String(item.id) === String(product.id) &&
@@ -79,7 +79,7 @@ function ProductDetails() {
   }
 
  function handleAddToCart() {
-  // Require login
+  // Require login to use cart
   if (!user) {
     navigate("/login");
     return;

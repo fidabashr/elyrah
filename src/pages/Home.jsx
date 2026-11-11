@@ -1,7 +1,6 @@
 
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-
 import { getProducts } from "../services/ProductServices";
 import ProductGrid from "../components/ProductGrid";
 
@@ -30,7 +29,7 @@ function Home() {
       image: "src/assets/images/whiteskirt.webp",
     },
     {
-      name: "Tops",
+      name: "Top",
       image: "src/assets/images/peplum.webp",
     },
     {
@@ -53,7 +52,7 @@ function Home() {
     backgroundPosition: "55% center",
   }}
 >
-  {/* Text overlay on image */}
+  {/* For Text overlay on image */}
  <div className="absolute left-6 top-1/2 z-10 -translate-y-1/2 sm:left-12 lg:left-20">
 
   <p className="mb-4 font-sans text-xs font-medium uppercase tracking-[0.35em] text-[#9B806B]">

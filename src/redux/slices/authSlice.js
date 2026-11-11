@@ -17,7 +17,8 @@ const authSlice=createSlice({
         state.user=null;
        state.isAuthenticated=false;
        localStorage.removeItem("user");
-     },updateUserProfile: (state, action) => {
+     },
+     updateUserProfile: (state, action) => {
   state.user = {
     ...state.user,
     ...action.payload,

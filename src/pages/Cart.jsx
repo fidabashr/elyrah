@@ -31,7 +31,6 @@ function Cart() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
-      {/* Page Heading */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-stone-900">
           Shopping Cart
@@ -52,7 +51,7 @@ function Cart() {
         />
       ) : (
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
-          {/* Cart Items */}
+         
           <div className="space-y-5 lg:col-span-2">
             {cartItems.map((item) => {
               const stock = Number(item.stock) || 0;
@@ -65,7 +64,7 @@ function Cart() {
                   key={item.cartId}
                   className="flex flex-col gap-5 rounded-lg border border-stone-200 bg-white p-4 sm:flex-row"
                 >
-                  {/* Product Image */}
+          
                   <div className="h-40 w-full overflow-hidden bg-stone-100 sm:w-36">
                     {imageUrl ? (
                       <img

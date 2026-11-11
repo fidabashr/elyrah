@@ -2,10 +2,7 @@
 import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import {
-  setCart,
-  clearCart,
-} from "../redux/slices/cartSlice";
+import { setCart,clearCart} from "../redux/slices/cartSlice";
 
 function CartStorage() {
   const dispatch = useDispatch();
