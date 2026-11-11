@@ -16,14 +16,14 @@ function Cart() {
 
   const cartItems = useSelector((state) => state.cart.items);
 
-  // Calculate total price
+
   const totalPrice = cartItems.reduce(
     (total, item) =>
       total + Number(item.price) * Number(item.quantity),
     0
   );
 
-  // Calculate total quantity
+
   const totalItems = cartItems.reduce(
     (total, item) => total + Number(item.quantity),
     0
