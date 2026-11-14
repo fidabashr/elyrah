@@ -27,13 +27,30 @@ export async function registerUser(user) {
 
   return response.json();
 }
-export async function loginUser(email,password) {
-  const users=await getUsers()
-  const user=users.find((item)=>item.email.toLowerCase()===email.toLowerCase() && item.password === password)
-  if(!user){
-    throw new Error("Invalid email or password")
-  }return user
+
+export async function loginUser(email, password) {
+  const users = await getUsers();
+
+  const user = users.find(
+    (item) =>
+      item.email.toLowerCase() === email.trim().toLowerCase() &&
+      item.password === password
+  );
+
+  if (!user) {
+    throw new Error("Invalid email or password");
+  }
+
+  // Check whether the account is blocked
+  if (user.blocked === true) {
+    throw new Error(
+      "Your account has been blocked. Please contact support."
+    );
+  }
+
+  return user;
 }
+
 // Update existing user details
 export async function updateUser(userId, updatedData) {
   const response = await fetch(`${API_URL}/users/${userId}`, {

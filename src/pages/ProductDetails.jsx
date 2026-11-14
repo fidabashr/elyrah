@@ -4,10 +4,14 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useDispatch, useSelector } from "react-redux";
 
-import { getProductsById } from "../services/ProductServices";
+import {
+  getProductsById,
+  getProducts,
+} from "../services/ProductServices";
+
 import { addToCart } from "../redux/slices/cartSlice";
 import { getProductImage } from "../utils/getProductImage";
-
+import ProductGrid from "../components/ProductGrid";
 
 function ProductDetails() {
   const { id } = useParams();
@@ -16,12 +20,14 @@ function ProductDetails() {
 
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
+
   const user = useSelector((state) => state.auth.user);
 
-  // Get cart items from Redux
-  const cartItems = useSelector((state) => state.cart.items);
+  const cartItems = useSelector(
+    (state) => state.cart.items
+  );
 
-
+  // Fetch selected product
   const {
     data: product,
     isPending,
@@ -32,8 +38,21 @@ function ProductDetails() {
     queryFn: () => getProductsById(id),
   });
 
+  // Fetch all products for similar products section
+  const {
+    data: allProducts = [],
+    isPending: isProductsPending,
+  } = useQuery({
+    queryKey: ["products"],
+    queryFn: getProducts,
+  });
+
   if (isPending) {
-    return <p className="p-10 text-center">Loading product...</p>;
+    return (
+      <p className="p-10 text-center">
+        Loading product...
+      </p>
+    );
   }
 
   if (isError) {
@@ -44,7 +63,7 @@ function ProductDetails() {
     );
   }
 
-  // Check whether this selected product is already in cart
+  // Check whether selected product is already in cart
   const isAlreadyInCart = cartItems.some(
     (item) =>
       String(item.id) === String(product.id) &&
@@ -53,6 +72,37 @@ function ProductDetails() {
   );
 
   const isOutOfStock = Number(product.stock) <= 0;
+
+  // Find products from the same category
+  const similarCategoryGroups = {
+  abayas: ["abaya"],
+  dresses: ["dress", "gown"],
+  tops: ["top"],
+  skirts: ["skirt"],
+  "co-ords": ["co-ord", "coord"],
+};
+
+const currentCategory = product.category?.toLowerCase() || "";
+
+const matchedGroup = Object.entries(similarCategoryGroups).find(
+  ([group, keywords]) =>
+    group === currentCategory ||
+    keywords.some((keyword) => currentCategory.includes(keyword))
+);
+
+const similarProducts = allProducts.filter((item) => {
+  if (String(item.id) === String(product.id)) return false;
+
+  const itemCategory = item.category?.toLowerCase() || "";
+
+  if (matchedGroup) {
+    return matchedGroup[1].some((keyword) =>
+      itemCategory.includes(keyword)
+    );
+  }
+
+  return itemCategory === currentCategory;
+});
 
   function validateSelection() {
     if (product.sizes?.length > 0 && !selectedSize) {
@@ -78,37 +128,32 @@ function ProductDetails() {
     };
   }
 
- function handleAddToCart() {
-  // Require login to use cart
-  if (!user) {
-    navigate("/login");
-    return;
+  function handleAddToCart() {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    if (!validateSelection()) return;
+
+    if (isOutOfStock) {
+      alert("This product is out of stock");
+      return;
+    }
+
+    if (isAlreadyInCart) return;
+
+    dispatch(addToCart(createSelectedItem()));
+
+    alert("Product added to cart!");
   }
-
-  if (!selectedSize || !selectedColor) {
-    alert("Please select size and color");
-    return;
-  }
-
-  if (product.stock <= 0) {
-    alert("This product is out of stock");
-    return;
-  }
-
-  dispatch(
-    addToCart({
-      ...product,
-      cartId: `${product.id}-${selectedSize}-${selectedColor}`,
-      size: selectedSize,
-      color: selectedColor,
-      quantity: 1,
-    })
-  );
-
-  alert("Product added to cart!");
-}
 
   function handleBuyNow() {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
     if (!validateSelection()) return;
 
     if (isOutOfStock) {
@@ -135,15 +180,22 @@ function ProductDetails() {
           ← Back to Products
         </Link>
 
+        {/* Product Details */}
         <div className="grid gap-10 rounded-xl bg-white p-5 shadow-sm md:grid-cols-2 md:p-8">
 
           {/* Product Image */}
           <div className="overflow-hidden rounded-lg bg-stone-100">
-            <img
-              src={getProductImage(product.image)}
-              alt={product.name}
-              className="h-[450px] w-full object-cover"
-            />
+            {getProductImage(product.image) ? (
+              <img
+                src={getProductImage(product.image)}
+                alt={product.name}
+                className="h-[450px] w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-[450px] items-center justify-center text-stone-500">
+                Image unavailable
+              </div>
+            )}
           </div>
 
           {/* Product Information */}
@@ -158,7 +210,7 @@ function ProductDetails() {
             </h1>
 
             <p className="mt-3 text-xl font-semibold">
-              ₹{product.price}
+              ₹{Number(product.price).toLocaleString("en-IN")}
             </p>
 
             <p className="mt-5 leading-7 text-stone-600">
@@ -168,12 +220,15 @@ function ProductDetails() {
             {/* Size Selection */}
             {product.sizes?.length > 0 && (
               <div className="mt-7">
-                <h3 className="mb-3 font-medium">Select Size</h3>
+                <h3 className="mb-3 font-medium">
+                  Select Size
+                </h3>
 
                 <div className="flex flex-wrap gap-3">
                   {product.sizes.map((size) => (
                     <button
                       key={size}
+                      type="button"
                       onClick={() => setSelectedSize(size)}
                       className={`rounded-md border px-5 py-2 text-sm ${
                         selectedSize === size
@@ -191,12 +246,15 @@ function ProductDetails() {
             {/* Color Selection */}
             {product.colors?.length > 0 && (
               <div className="mt-7">
-                <h3 className="mb-3 font-medium">Select Color</h3>
+                <h3 className="mb-3 font-medium">
+                  Select Color
+                </h3>
 
                 <div className="flex flex-wrap gap-3">
                   {product.colors.map((color) => (
                     <button
                       key={color}
+                      type="button"
                       onClick={() => setSelectedColor(color)}
                       className={`rounded-md border px-4 py-2 text-sm ${
                         selectedColor === color
@@ -214,7 +272,9 @@ function ProductDetails() {
             {/* Stock */}
             <p className="mt-6 text-sm">
               {isOutOfStock ? (
-                <span className="text-red-600">Out of Stock</span>
+                <span className="text-red-600">
+                  Out of Stock
+                </span>
               ) : (
                 <span className="text-green-700">
                   In Stock: {product.stock}
@@ -263,6 +323,28 @@ function ProductDetails() {
           </div>
         </div>
 
+        {/* Similar Products */}
+        {!isProductsPending && similarProducts.length > 0 && (
+          <section className="mt-16">
+
+            <div className="mb-7">
+              <p className="text-sm uppercase tracking-widest text-stone-500">
+                You may also like
+              </p>
+
+              <h2 className="mt-2 text-2xl font-semibold text-stone-900">
+                Similar Products
+              </h2>
+
+              <p className="mt-2 text-sm text-stone-600">
+                Explore more products from {product.category}.
+              </p>
+            </div>
+
+            <ProductGrid products={similarProducts.slice(0, 4)} />
+
+          </section>
+        )}
 
       </div>
     </div>

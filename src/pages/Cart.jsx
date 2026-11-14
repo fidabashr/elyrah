@@ -10,11 +10,20 @@ import {
 } from "../redux/slices/cartSlice";
 
 import EmptyState from "../components/EmptyState";
+import ConfirmDialog from "../components/ConfirmDialog";
+import useConfirm from "../hooks/useConfirm";
+
 
 function Cart() {
   const dispatch = useDispatch();
 
   const cartItems = useSelector((state) => state.cart.items);
+   const {
+    dialog,
+    showConfirm,
+    closeConfirm,
+    handleConfirm,
+  } = useConfirm();
 
 
   const totalPrice = cartItems.reduce(
@@ -28,18 +37,36 @@ function Cart() {
     (total, item) => total + Number(item.quantity),
     0
   );
+  function handleRemove(item) {
+    showConfirm({
+      title: "Remove Product?",
+      message: `Are you sure you want to remove "${item.name}" from your cart?`,
+      confirmText: "Remove",
+      onConfirm: () => dispatch(removeFromCart(item.cartId)),
+    });
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-stone-900">
-          Shopping Cart
-        </h1>
+     
+   <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+  <div>
+    <h1 className="text-2xl font-semibold text-stone-900">
+      Shopping Cart
+    </h1>
 
-        <p className="mt-2 text-sm text-stone-500">
-          Review your selected items before checkout.
-        </p>
-      </div>
+    <p className="mt-2 text-sm text-stone-500">
+      Review your selected items before checkout.
+    </p>
+  </div>
+
+  <Link
+    to="/products"
+    className="text-sm text-stone-600 transition hover:text-stone-900 hover:underline"
+  >
+    + Explore More Products
+  </Link>
+</div>
 
       {/* Empty Cart or Cart Items */}
       {cartItems.length === 0 ? (
@@ -148,7 +175,7 @@ function Cart() {
                       <button
                         type="button"
                         onClick={() =>
-                          dispatch(removeFromCart(item.cartId))
+                          handleRemove(item)
                         }
                         className="text-sm text-red-600 hover:text-red-800"
                       >
@@ -221,6 +248,11 @@ function Cart() {
           </div>
         </div>
       )}
+       <ConfirmDialog
+        dialog={dialog}
+        onClose={closeConfirm}
+        onConfirm={handleConfirm}
+      />
     </div>
   );
 }

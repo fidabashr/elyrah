@@ -66,7 +66,7 @@
       "price": 2799,
       "description": "Beautiful open abaya featuring delicate floral embroidery.",
       "image": "src/assets/images/dotted.webp",
-      "stock": 5,
+      "stock": 0,
       "rating": 4.8,
       "sizes": [
         "M",
@@ -421,31 +421,36 @@
       "password": "fida5040",
       "id": "NAYpBUQbOVE",
       "phone": "7902275040",
-      "address": "Parakkal(H),Thondernad(P.O)"
+      "address": "Parakkal(H),Thondernad(P.O)",
+      "blocked": false
     },
     {
       "name": "ashika",
       "email": "ashika@gmail.com",
       "password": "994713",
-      "id": "7oLtsGX6sYk"
+      "id": "7oLtsGX6sYk",
+      "blocked": false
     },
     {
       "name": "ashika",
       "email": "ashi23@gmail.com",
       "password": "ashika123",
-      "id": "c5XZtcUT-8Q"
+      "id": "c5XZtcUT-8Q",
+      "blocked": false
     },
     {
       "name": "hani",
       "email": "hani@gmail.com",
       "password": "fidahani",
-      "id": "GTMNH0g5Bzw"
+      "id": "GTMNH0g5Bzw",
+      "blocked": false
     },
     {
       "name": "hari",
       "email": "hari@gmail.com",
       "password": "123456",
-      "id": "A8WNd-dDdow"
+      "id": "A8WNd-dDdow",
+      "blocked": false
     }
   ],
   "orders": [
@@ -676,6 +681,60 @@
       "status": "Pending",
       "createdAt": "2026-11-10T12:06:46.325Z",
       "id": "2GYutw3ep_w"
+    },
+    {
+      "userId": "NAYpBUQbOVE",
+      "customerName": "fida",
+      "email": "fidabashr@gmail.com",
+      "phone": "7902275040",
+      "address": "Parakkal",
+      "items": [
+        {
+          "id": "2",
+          "name": "Premium Beige Abaya",
+          "image": "src/assets/images/beigeAbaya.webp",
+          "price": 2199,
+          "quantity": 1,
+          "size": "S",
+          "color": "Beige"
+        }
+      ],
+      "totalAmount": 2199,
+      "paymentMethod": "COD",
+      "status": "Cancelled",
+      "createdAt": "2026-11-11T13:26:29.890Z",
+      "id": "GTcKmDc2uE8"
+    },
+    {
+      "userId": "NAYpBUQbOVE",
+      "customerName": "fida",
+      "email": "fidabashr@gmail.com",
+      "phone": "7902275040",
+      "address": "Parakkal",
+      "items": [
+        {
+          "id": "4",
+          "name": "Dotted Open Abaya",
+          "image": "src/assets/images/dotted.webp",
+          "price": 2799,
+          "quantity": 5,
+          "size": "M",
+          "color": "Olive"
+        }
+      ],
+      "totalAmount": 13995,
+      "paymentMethod": "COD",
+      "status": "Pending",
+      "createdAt": "2026-11-11T13:28:17.390Z",
+      "id": "__p81g-87cQ"
+    }
+  ],
+  "admins": [
+    {
+      "id": "1",
+      "name": "ELYRAH",
+      "email": "admin@elyrah.com",
+      "password": "admin123"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

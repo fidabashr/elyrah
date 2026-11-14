@@ -33,11 +33,13 @@ function Login() {
       const user = await loginUser(email, password);
 
       // Remove password before storing user
-      const loggedInUser = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      };
+     const loggedInUser = {
+  id: user.id,
+  name: user.name,
+  email: user.email,
+  phone: user.phone || "",
+  address: user.address || "",
+};
 
       // Save user in Redux
       dispatch(login(loggedInUser));
