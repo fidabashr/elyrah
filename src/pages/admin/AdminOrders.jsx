@@ -1,13 +1,30 @@
 
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useDispatch, useSelector } from "react-redux";
 
-import { getAdminOrders } from "../../services/adminOrderServices";
-import { setAdminOrders } from "../../redux/slices/admin/adminOrderSlice";
+import {
+  getAdminOrders,
+  updateAdminOrderStatus,
+} from "../../services/adminOrderServices";
+
+import {
+  setAdminOrders,
+  updateAdminOrder,
+} from "../../redux/slices/admin/adminOrderSlice";
+
+import {
+  getProducts,
+  updateProductStock,
+} from "../../services/ProductServices";
 
 function AdminOrders() {
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
 
   const orders = useSelector(
     (state) => state.adminOrders.items
@@ -17,8 +34,17 @@ function AdminOrders() {
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [actionError, setActionError] = useState("");
 
   const ordersPerPage = 8;
+
+  const statuses = [
+    "Pending",
+    "Processing",
+    "Shipped",
+    "Delivered",
+    "Cancelled",
+  ];
 
   // Fetch orders
   const {
@@ -31,12 +57,177 @@ function AdminOrders() {
     queryFn: getAdminOrders,
   });
 
-  // Store orders in Redux
+  // Store fetched orders in Redux
   useEffect(() => {
     if (data) {
       dispatch(setAdminOrders(data));
     }
   }, [data, dispatch]);
+
+  // Update order status mutation
+  const statusMutation = useMutation({
+    mutationFn: async ({ order, newStatus }) => {
+      const shouldRestoreStock =
+        newStatus === "Cancelled" &&
+        order.status !== "Cancelled" &&
+        order.stockRestored !== true;
+
+      const restoredProducts = [];
+
+      try {
+        // Restore stock when an order is cancelled
+        if (shouldRestoreStock) {
+          const products = await getProducts();
+
+          // Combine quantities if an order contains the same product
+          // more than once.
+          const quantities = new Map();
+
+          for (const item of order.items || []) {
+            const productId = item.productId ?? item.id;
+
+            if (productId == null) {
+              throw new Error(
+                "A product ID is missing from this order."
+              );
+            }
+
+            const key = String(productId);
+
+            quantities.set(
+              key,
+              (quantities.get(key) || 0) +
+                Number(item.quantity)
+            );
+          }
+
+          // Restore each product's stock
+          for (const [productId, quantity] of quantities) {
+            const product = products.find(
+              (item) => String(item.id) === productId
+            );
+
+            if (!product) {
+              throw new Error(
+                `Product ${productId} could not be found.`
+              );
+            }
+
+            if (
+              !Number.isInteger(quantity) ||
+              quantity <= 0
+            ) {
+              throw new Error(
+                "Invalid product quantity in this order."
+              );
+            }
+
+            const previousStock = Number(product.stock);
+
+            await updateProductStock(
+              product.id,
+              previousStock + quantity
+            );
+
+            // Save original stock for rollback if necessary
+            restoredProducts.push({
+              id: product.id,
+              stock: previousStock,
+            });
+          }
+        }
+
+        // Update the order in JSON Server
+        const updates = {
+          status: newStatus,
+        };
+
+        if (shouldRestoreStock) {
+          updates.stockRestored = true;
+        }
+
+        const updatedOrder = await updateAdminOrderStatus(
+          order.id,
+          updates
+        );
+
+        return updatedOrder;
+      } catch (error) {
+        // Roll back stock if cancellation fails
+        for (const product of [...restoredProducts].reverse()) {
+          try {
+            await updateProductStock(
+              product.id,
+              product.stock
+            );
+          } catch (rollbackError) {
+            console.error(
+              "Could not roll back product stock:",
+              product.id,
+              rollbackError
+            );
+          }
+        }
+
+        throw error;
+      }
+    },
+
+    onSuccess: (updatedOrder) => {
+      dispatch(updateAdminOrder(updatedOrder));
+
+      // Update the open modal if it shows this order
+      setSelectedOrder((previous) =>
+        previous &&
+        String(previous.id) === String(updatedOrder.id)
+          ? updatedOrder
+          : previous
+      );
+
+      setActionError("");
+
+      queryClient.invalidateQueries({
+        queryKey: ["adminOrders"],
+      });
+
+      // Refresh products because stock may have changed
+      queryClient.invalidateQueries({
+        queryKey: ["products"],
+      });
+    },
+
+    onError: (error) => {
+      setActionError(error.message);
+    },
+  });
+
+  // Handle status change
+  function handleStatusChange(order, newStatus) {
+    if (order.status === "Cancelled") {
+      return;
+    }
+
+    if (order.status === newStatus) {
+      return;
+    }
+
+    if (newStatus === "Cancelled") {
+      const confirmed = window.confirm(
+        `Are you sure you want to cancel order #${order.id}? Product stock will be restored.`
+      );
+
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    setActionError("");
+
+    statusMutation.mutate({
+      order,
+      newStatus,
+    });
+  }
 
   // Search and filter
   const filteredOrders = orders.filter((order) => {
@@ -45,7 +236,9 @@ function AdminOrders() {
     const matchesSearch =
       String(order.id).toLowerCase().includes(search) ||
       (order.customerName || "").toLowerCase().includes(search) ||
-      (order.customerEmail || "").toLowerCase().includes(search);
+      (order.customerEmail || order.email || "")
+        .toLowerCase()
+        .includes(search);
 
     const matchesStatus =
       selectedStatus === "All" ||
@@ -171,11 +364,12 @@ function AdminOrders() {
           className="w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-sm outline-none focus:border-stone-700 sm:w-52"
         >
           <option value="All">All Statuses</option>
-          <option value="Pending">Pending</option>
-          <option value="Processing">Processing</option>
-          <option value="Shipped">Shipped</option>
-          <option value="Delivered">Delivered</option>
-          <option value="Cancelled">Cancelled</option>
+
+          {statuses.map((status) => (
+            <option key={status} value={status}>
+              {status}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -195,6 +389,13 @@ function AdminOrders() {
         {" orders"}
       </p>
 
+      {/* Action Error */}
+      {actionError && (
+        <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+          {actionError}
+        </p>
+      )}
+
       {/* Orders Table */}
       <div className="overflow-x-auto rounded-xl bg-white shadow-sm">
         {filteredOrders.length === 0 ? (
@@ -202,7 +403,7 @@ function AdminOrders() {
             No orders found.
           </div>
         ) : (
-          <table className="w-full min-w-[750px] text-left text-sm">
+          <table className="w-full min-w-[950px] text-left text-sm">
             <thead className="border-b border-stone-200 bg-stone-50 text-stone-600">
               <tr>
                 <th className="px-6 py-4 font-medium">Order ID</th>
@@ -210,7 +411,10 @@ function AdminOrders() {
                 <th className="px-6 py-4 font-medium">Date</th>
                 <th className="px-6 py-4 font-medium">Total</th>
                 <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 text-center font-medium">Details</th>
+                <th className="px-6 py-4 font-medium">Update Status</th>
+                <th className="px-6 py-4 text-center font-medium">
+                  Details
+                </th>
               </tr>
             </thead>
 
@@ -225,8 +429,9 @@ function AdminOrders() {
                     <p className="font-medium text-stone-800">
                       {order.customerName || "N/A"}
                     </p>
+
                     <p className="text-xs text-stone-500">
-                      {order.customerEmail || ""}
+                      {order.customerEmail || order.email || ""}
                     </p>
                   </td>
 
@@ -244,6 +449,27 @@ function AdminOrders() {
                     >
                       {order.status || "Pending"}
                     </span>
+                  </td>
+
+                  {/* Status Update */}
+                  <td className="px-6 py-4">
+                    <select
+                      value={order.status || "Pending"}
+                      onChange={(e) =>
+                        handleStatusChange(order, e.target.value)
+                      }
+                      disabled={
+                        order.status === "Cancelled" ||
+                        statusMutation.isPending
+                      }
+                      className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-xs outline-none focus:border-stone-700 disabled:cursor-not-allowed disabled:bg-stone-100"
+                    >
+                      {statuses.map((status) => (
+                        <option key={status} value={status}>
+                          {status}
+                        </option>
+                      ))}
+                    </select>
                   </td>
 
                   <td className="px-6 py-4 text-center">
@@ -274,7 +500,22 @@ function AdminOrders() {
             Previous
           </button>
 
-        
+          {Array.from(
+            { length: totalPages },
+            (_, index) => index + 1
+          ).map((page) => (
+            <button
+              key={page}
+              onClick={() => setCurrentPage(page)}
+              className={`rounded-lg px-4 py-2 text-sm ${
+                currentPage === page
+                  ? "bg-stone-900 text-white"
+                  : "border border-stone-300 text-stone-700 hover:bg-stone-100"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
 
           <button
             onClick={() =>
@@ -292,11 +533,13 @@ function AdminOrders() {
       {selectedOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
+            {/* Modal Heading */}
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-semibold text-stone-900">
                   Order #{selectedOrder.id}
                 </h2>
+
                 <p className="mt-1 text-sm text-stone-500">
                   {formatDate(selectedOrder.createdAt)}
                 </p>
@@ -322,11 +565,11 @@ function AdminOrders() {
               </p>
 
               <p className="mt-1 text-sm text-stone-600">
-                Email: {selectedOrder.customerEmail || "N/A"}
+                Email: {selectedOrder.customerEmail || selectedOrder.email || "N/A"}
               </p>
 
               <p className="mt-1 text-sm text-stone-600">
-                Phone: {selectedOrder.customerPhone || "N/A"}
+                Phone: {selectedOrder.customerPhone || selectedOrder.phone || "N/A"}
               </p>
 
               <p className="mt-1 text-sm text-stone-600">
@@ -342,7 +585,7 @@ function AdminOrders() {
             <div className="space-y-3">
               {(selectedOrder.items || []).map((item, index) => (
                 <div
-                  key={`${item.id}-${index}`}
+                  key={`${item.id ?? item.productId}-${index}`}
                   className="flex items-start justify-between gap-4 border-b border-stone-100 pb-3"
                 >
                   <div>
@@ -385,18 +628,47 @@ function AdminOrders() {
 
               <div className="mt-3 flex justify-between text-lg font-semibold text-stone-900">
                 <span>Total Amount</span>
+
                 <span>
                   ₹{Number(selectedOrder.totalAmount || 0).toLocaleString("en-IN")}
                 </span>
               </div>
 
-              <div className="mt-3">
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusStyle(selectedOrder.status)}`}
+              <div className="mt-4">
+                <p className="mb-2 text-sm font-medium text-stone-700">
+                  Update Order Status
+                </p>
+
+                <select
+                  value={selectedOrder.status || "Pending"}
+                  onChange={(e) =>
+                    handleStatusChange(selectedOrder, e.target.value)
+                  }
+                  disabled={
+                    selectedOrder.status === "Cancelled" ||
+                    statusMutation.isPending
+                  }
+                  className="w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-sm outline-none focus:border-stone-700 disabled:bg-stone-100"
                 >
-                  {selectedOrder.status || "Pending"}
-                </span>
+                  {statuses.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+
+                {statusMutation.isPending && (
+                  <p className="mt-2 text-xs text-stone-500">
+                    Updating order...
+                  </p>
+                )}
               </div>
+
+              {actionError && (
+                <p className="mt-3 text-sm text-red-600">
+                  {actionError}
+                </p>
+              )}
             </div>
 
             <button

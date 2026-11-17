@@ -7,7 +7,7 @@
       "price": 1899,
       "description": "Elegant flowing black abaya with a minimal design.",
       "image": "src/assets/images/classicAbaya.webp",
-      "stock": 8,
+      "stock": 9,
       "rating": 4.8,
       "sizes": [
         "S",
@@ -26,7 +26,7 @@
       "price": 2199,
       "description": "Minimal beige abaya crafted for everyday elegance.",
       "image": "src/assets/images/beigeAbaya.webp",
-      "stock": 10,
+      "stock": 11,
       "rating": 4.7,
       "sizes": [
         "S",
@@ -105,7 +105,7 @@
       "price": 1999,
       "description": "Soft floral maxi dress perfect for casual outings.",
       "image": "src/assets/images/floral.webp",
-      "stock": 7,
+      "stock": 9,
       "rating": 4.6,
       "sizes": [
         "S",
@@ -360,7 +360,7 @@
       "price": 1099,
       "description": "Elegant pleated blouse with long sleeves and a relaxed fit.",
       "image": "src/assets/images/pleated.webp",
-      "stock": 7,
+      "stock": 8,
       "rating": 4.7,
       "sizes": [
         "S",
@@ -477,7 +477,7 @@
       ],
       "totalAmount": 2199,
       "paymentMethod": "COD",
-      "status": "Pending",
+      "status": "Delivered",
       "createdAt": "2026-11-07T05:10:59.174Z",
       "id": "Lajg1-RqQ7Q"
     },
@@ -522,9 +522,10 @@
       ],
       "totalAmount": 5197,
       "paymentMethod": "COD",
-      "status": "Pending",
+      "status": "Cancelled",
       "createdAt": "2026-11-09T08:39:49.761Z",
-      "id": "LFs3ZupCLMY"
+      "id": "LFs3ZupCLMY",
+      "stockRestored": true
     },
     {
       "userId": "A8WNd-dDdow",
@@ -545,9 +546,10 @@
       ],
       "totalAmount": 3998,
       "paymentMethod": "COD",
-      "status": "Pending",
+      "status": "Cancelled",
       "createdAt": "2026-11-09T11:43:33.460Z",
-      "id": "IMa3A8d2EPo"
+      "id": "IMa3A8d2EPo",
+      "stockRestored": true
     },
     {
       "userId": "NAYpBUQbOVE",
