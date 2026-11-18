@@ -500,22 +500,6 @@ function AdminOrders() {
             Previous
           </button>
 
-          {Array.from(
-            { length: totalPages },
-            (_, index) => index + 1
-          ).map((page) => (
-            <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={`rounded-lg px-4 py-2 text-sm ${
-                currentPage === page
-                  ? "bg-stone-900 text-white"
-                  : "border border-stone-300 text-stone-700 hover:bg-stone-100"
-              }`}
-            >
-              {page}
-            </button>
-          ))}
 
           <button
             onClick={() =>

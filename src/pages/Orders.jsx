@@ -93,7 +93,10 @@ function Orders() {
       }
 
       // Update order status after stock restoration
-      await updateOrderStatus(order.id, "Cancelled");
+    await updateOrderStatus(order.id, {
+  status: "Cancelled",
+  stockRestored: true,
+});
 
       // Refresh orders and product lists
       await queryClient.invalidateQueries({

@@ -131,7 +131,7 @@ function AdminDashboard() {
       link: "/admin/orders",
     },
     {
-      title: "Total Sales",
+      title: "Total Order Value",
       value: formatCurrency(totalSales),
       description: "Excluding cancelled orders",
       link: "/admin/orders",

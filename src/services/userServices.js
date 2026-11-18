@@ -41,14 +41,16 @@ export async function loginUser(email, password) {
     throw new Error("Invalid email or password");
   }
 
-  // Check whether the account is blocked
   if (user.blocked === true) {
     throw new Error(
       "Your account has been blocked. Please contact support."
     );
   }
 
-  return user;
+  // Remove password before returning user data
+  const { password: _, ...userWithoutPassword } = user;
+
+  return userWithoutPassword;
 }
 
 // Update existing user details
@@ -63,6 +65,15 @@ export async function updateUser(userId, updatedData) {
 
   if (!response.ok) {
     throw new Error("Failed to update profile");
+  }
+
+  return response.json();
+}
+export async function getUserById(userId) {
+  const response = await fetch(`${API_URL}/users/${userId}`);
+
+  if (!response.ok) {
+    throw new Error("Unable to verify your account.");
   }
 
   return response.json();

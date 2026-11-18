@@ -220,7 +220,7 @@ useEffect(() => {
   ];
  // Search and category filtering
 const filteredProducts = products.filter((product) => {
-  const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+  const matchesSearch = String(product.name || "").toLowerCase().includes(searchTerm.toLowerCase().trim());
   const matchesCategory =selectedCategory === "All" ||product.category === selectedCategory;
   return matchesSearch && matchesCategory;
 });

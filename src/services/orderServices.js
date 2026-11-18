@@ -31,8 +31,9 @@ export async function getOrders(userId) {
   return response.json();
 }
 
-// Update order status
-export async function updateOrderStatus(orderId, status) {
+
+// Update order details
+export async function updateOrderStatus(orderId, updates) {
   const response = await fetch(
     `${API_URL}/orders/${orderId}`,
     {
@@ -40,7 +41,7 @@ export async function updateOrderStatus(orderId, status) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify(updates),
     }
   );
 
