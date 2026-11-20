@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import {
   useQuery,
@@ -21,6 +20,25 @@ import {
   getProducts,
   updateProductStock,
 } from "../../services/ProductServices";
+
+import {
+  ShoppingBag,
+  Clock,
+  PackageCheck,
+  CheckCircle2,
+  Search,
+  Eye,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  RefreshCw,
+  UserRound,
+  MapPin,
+  Phone,
+  Mail,
+  CreditCard,
+  Package,
+} from "lucide-react";
 
 function AdminOrders() {
   const dispatch = useDispatch();
@@ -52,6 +70,8 @@ function AdminOrders() {
     isPending,
     isError,
     error,
+    refetch,
+    isFetching,
   } = useQuery({
     queryKey: ["adminOrders"],
     queryFn: getAdminOrders,
@@ -75,12 +95,10 @@ function AdminOrders() {
       const restoredProducts = [];
 
       try {
-        // Restore stock when an order is cancelled
         if (shouldRestoreStock) {
           const products = await getProducts();
 
-          // Combine quantities if an order contains the same product
-          // more than once.
+          // Combine quantities if the same product appears more than once
           const quantities = new Map();
 
           for (const item of order.items || []) {
@@ -101,7 +119,7 @@ function AdminOrders() {
             );
           }
 
-          // Restore each product's stock
+          // Restore product stock
           for (const [productId, quantity] of quantities) {
             const product = products.find(
               (item) => String(item.id) === productId
@@ -113,10 +131,7 @@ function AdminOrders() {
               );
             }
 
-            if (
-              !Number.isInteger(quantity) ||
-              quantity <= 0
-            ) {
+            if (!Number.isInteger(quantity) || quantity <= 0) {
               throw new Error(
                 "Invalid product quantity in this order."
               );
@@ -129,7 +144,6 @@ function AdminOrders() {
               previousStock + quantity
             );
 
-            // Save original stock for rollback if necessary
             restoredProducts.push({
               id: product.id,
               stock: previousStock,
@@ -137,7 +151,6 @@ function AdminOrders() {
           }
         }
 
-        // Update the order in JSON Server
         const updates = {
           status: newStatus,
         };
@@ -153,7 +166,7 @@ function AdminOrders() {
 
         return updatedOrder;
       } catch (error) {
-        // Roll back stock if cancellation fails
+        // Roll back stock if order update fails
         for (const product of [...restoredProducts].reverse()) {
           try {
             await updateProductStock(
@@ -176,7 +189,6 @@ function AdminOrders() {
     onSuccess: (updatedOrder) => {
       dispatch(updateAdminOrder(updatedOrder));
 
-      // Update the open modal if it shows this order
       setSelectedOrder((previous) =>
         previous &&
         String(previous.id) === String(updatedOrder.id)
@@ -190,7 +202,6 @@ function AdminOrders() {
         queryKey: ["adminOrders"],
       });
 
-      // Refresh products because stock may have changed
       queryClient.invalidateQueries({
         queryKey: ["products"],
       });
@@ -203,22 +214,15 @@ function AdminOrders() {
 
   // Handle status change
   function handleStatusChange(order, newStatus) {
-    if (order.status === "Cancelled") {
-      return;
-    }
-
-    if (order.status === newStatus) {
-      return;
-    }
+    if (order.status === "Cancelled") return;
+    if (order.status === newStatus) return;
 
     if (newStatus === "Cancelled") {
       const confirmed = window.confirm(
         `Are you sure you want to cancel order #${order.id}? Product stock will be restored.`
       );
 
-      if (!confirmed) {
-        return;
-      }
+      if (!confirmed) return;
     }
 
     setActionError("");
@@ -231,7 +235,7 @@ function AdminOrders() {
 
   // Search and filter
   const filteredOrders = orders.filter((order) => {
-    const search = searchTerm.toLowerCase();
+    const search = searchTerm.trim().toLowerCase();
 
     const matchesSearch =
       String(order.id).toLowerCase().includes(search) ||
@@ -268,360 +272,536 @@ function AdminOrders() {
   function formatDate(date) {
     if (!date) return "N/A";
 
-    return new Date(date).toLocaleDateString("en-IN", {
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) return "N/A";
+
+    return parsedDate.toLocaleDateString("en-IN", {
       day: "2-digit",
       month: "short",
       year: "numeric",
     });
   }
 
+  // Format currency
+  function formatPrice(price) {
+    return Number(price || 0).toLocaleString("en-IN");
+  }
+
   // Status styles
   function getStatusStyle(status) {
     const styles = {
-      Pending: "bg-yellow-100 text-yellow-700",
-      Processing: "bg-blue-100 text-blue-700",
-      Shipped: "bg-purple-100 text-purple-700",
-      Delivered: "bg-green-100 text-green-700",
-      Cancelled: "bg-red-100 text-red-700",
+      Pending: "bg-[#F7EBD0] text-[#87652C]",
+      Processing: "bg-[#E5EAF0] text-[#50677D]",
+      Shipped: "bg-[#EAE3F0] text-[#755A91]",
+      Delivered: "bg-[#E5EBDD] text-[#536B48]",
+      Cancelled: "bg-[#F4E2DE] text-[#A34F45]",
     };
 
-    return styles[status] || "bg-stone-100 text-stone-700";
+    return styles[status] || "bg-[#E5D9C9] text-[#796858]";
   }
 
   if (isPending) {
     return (
-      <p className="py-10 text-center text-stone-500">
-        Loading orders...
-      </p>
+      <div className="flex min-h-72 items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <RefreshCw
+            size={25}
+            className="animate-spin text-[#796858]"
+          />
+          <p className="text-sm text-[#796858]">
+            Loading orders...
+          </p>
+        </div>
+      </div>
     );
   }
 
   if (isError) {
     return (
-      <p className="py-10 text-center text-red-600">
-        {error.message}
-      </p>
+      <div className="rounded-2xl border border-[#E5D9C9] bg-[#FAF7F1] p-8 text-center">
+        <p className="text-sm text-red-700">
+          {error.message}
+        </p>
+
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="mt-4 rounded-lg bg-[#342820] px-5 py-2.5 text-sm font-medium text-[#FAF7F1] hover:bg-[#796858]"
+        >
+          Try Again
+        </button>
+      </div>
     );
   }
 
   return (
-    <div>
+    <div className="mx-auto w-full max-w-[1500px]">
       {/* Heading */}
-      <div className="mb-7">
-        <h1 className="text-2xl font-semibold text-stone-900">
-          Orders
-        </h1>
+      <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#A49380]">
+            Store Management
+          </p>
 
-        <p className="mt-1 text-sm text-stone-500">
-          View and manage customer orders.
-        </p>
+          <h1 className="mt-1 font-display text-3xl font-semibold text-[#342820] md:text-4xl">
+            Orders
+          </h1>
+
+          <p className="mt-1 text-sm text-[#796858]">
+            Track customer purchases and manage order fulfilment.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => refetch()}
+          disabled={isFetching}
+          className="flex items-center gap-2 rounded-xl border border-[#D8C8B5] bg-[#FAF7F1] px-4 py-3 text-sm font-medium text-[#796858] transition hover:bg-[#E5D9C9] disabled:opacity-50"
+        >
+          <RefreshCw
+            size={16}
+            className={isFetching ? "animate-spin" : ""}
+          />
+          Refresh
+        </button>
       </div>
 
       {/* Summary Cards */}
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl bg-white p-5 shadow-sm">
-          <p className="text-sm text-stone-500">Total Orders</p>
-          <h2 className="mt-2 text-2xl font-semibold text-stone-900">
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-2xl border border-[#E5D9C9] bg-[#FAF7F1] p-5">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-[#796858]">Total Orders</p>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#E5D9C9] text-[#796858]">
+              <ShoppingBag size={19} />
+            </div>
+          </div>
+          <h2 className="mt-3 font-display text-3xl font-semibold text-[#342820]">
             {orders.length}
           </h2>
         </div>
 
-        <div className="rounded-xl bg-white p-5 shadow-sm">
-          <p className="text-sm text-stone-500">Pending</p>
-          <h2 className="mt-2 text-2xl font-semibold text-yellow-700">
+        <div className="rounded-2xl border border-[#E5D9C9] bg-[#FAF7F1] p-5">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-[#796858]">Pending</p>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F7EBD0] text-[#87652C]">
+              <Clock size={19} />
+            </div>
+          </div>
+          <h2 className="mt-3 font-display text-3xl font-semibold text-[#87652C]">
             {orders.filter((order) => order.status === "Pending").length}
           </h2>
         </div>
 
-        <div className="rounded-xl bg-white p-5 shadow-sm">
-          <p className="text-sm text-stone-500">Processing</p>
-          <h2 className="mt-2 text-2xl font-semibold text-blue-700">
+        <div className="rounded-2xl border border-[#E5D9C9] bg-[#FAF7F1] p-5">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-[#796858]">Processing</p>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#E5EAF0] text-[#50677D]">
+              <Package size={19} />
+            </div>
+          </div>
+          <h2 className="mt-3 font-display text-3xl font-semibold text-[#50677D]">
             {orders.filter((order) => order.status === "Processing").length}
           </h2>
         </div>
 
-        <div className="rounded-xl bg-white p-5 shadow-sm">
-          <p className="text-sm text-stone-500">Delivered</p>
-          <h2 className="mt-2 text-2xl font-semibold text-green-700">
+        <div className="rounded-2xl border border-[#E5D9C9] bg-[#FAF7F1] p-5">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-[#796858]">Delivered</p>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#E5EBDD] text-[#536B48]">
+              <CheckCircle2 size={19} />
+            </div>
+          </div>
+          <h2 className="mt-3 font-display text-3xl font-semibold text-[#536B48]">
             {orders.filter((order) => order.status === "Delivered").length}
           </h2>
         </div>
       </div>
 
       {/* Search and Filter */}
-      <div className="mb-5 flex flex-col gap-4 sm:flex-row">
-        <input
-          type="text"
-          placeholder="Search order ID or customer..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-sm outline-none focus:border-stone-700 sm:flex-1"
-        />
+      <section className="mb-5 rounded-2xl border border-[#E5D9C9] bg-[#FAF7F1] p-4 md:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="relative flex-1">
+            <Search
+              size={18}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A49380]"
+            />
 
-        <select
-          value={selectedStatus}
-          onChange={(e) => setSelectedStatus(e.target.value)}
-          className="w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-sm outline-none focus:border-stone-700 sm:w-52"
-        >
-          <option value="All">All Statuses</option>
+            <input
+              type="text"
+              placeholder="Search order ID or customer..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full rounded-xl border border-[#D8C8B5] bg-white py-3 pl-11 pr-4 text-sm text-[#342820] outline-none placeholder:text-[#B7A48D] focus:border-[#796858]"
+            />
+          </div>
 
-          {statuses.map((status) => (
-            <option key={status} value={status}>
-              {status}
-            </option>
-          ))}
-        </select>
-      </div>
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="w-full rounded-xl border border-[#D8C8B5] bg-white px-4 py-3 text-sm text-[#342820] outline-none focus:border-[#796858] sm:w-56"
+          >
+            <option value="All">All Statuses</option>
+            {statuses.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      {/* Order Count */}
-      <p className="mb-4 text-sm text-stone-500">
-        Showing{" "}
-        {filteredOrders.length === 0 ? 0 : startIndex + 1}
-        {" - "}
-        {Math.min(
-          startIndex + ordersPerPage,
-          filteredOrders.length
-        )}
-        {" of "}
-        <span className="font-semibold text-stone-900">
-          {filteredOrders.length}
-        </span>
-        {" orders"}
-      </p>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-[#796858]">
+            Showing{" "}
+            <span className="font-semibold text-[#342820]">
+              {filteredOrders.length === 0 ? 0 : startIndex + 1}
+              {" - "}
+              {Math.min(
+                startIndex + ordersPerPage,
+                filteredOrders.length
+              )}
+            </span>{" "}
+            of{" "}
+            <span className="font-semibold text-[#342820]">
+              {filteredOrders.length}
+            </span>{" "}
+            orders
+          </p>
+
+          {(searchTerm || selectedStatus !== "All") && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchTerm("");
+                setSelectedStatus("All");
+              }}
+              className="text-xs font-semibold text-[#796858] underline underline-offset-4 hover:text-[#342820]"
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
+      </section>
 
       {/* Action Error */}
       {actionError && (
-        <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+        <p className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">
           {actionError}
         </p>
       )}
 
       {/* Orders Table */}
-      <div className="overflow-x-auto rounded-xl bg-white shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-[#E5D9C9] bg-[#FAF7F1] shadow-sm">
+        <div className="border-b border-[#E5D9C9] px-5 py-4">
+          <h2 className="font-display text-xl font-semibold text-[#342820]">
+            Order Management
+          </h2>
+          <p className="mt-1 text-xs text-[#8B7A68]">
+            Review and update customer orders.
+          </p>
+        </div>
+
         {filteredOrders.length === 0 ? (
-          <div className="p-10 text-center text-stone-500">
-            No orders found.
+          <div className="flex flex-col items-center px-5 py-16 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#E5D9C9] text-[#796858]">
+              <ShoppingBag size={24} />
+            </div>
+            <h3 className="mt-4 font-display text-xl font-semibold text-[#342820]">
+              No orders found
+            </h3>
+            <p className="mt-1 text-sm text-[#8B7A68]">
+              Try changing your search or status filter.
+            </p>
           </div>
         ) : (
-          <table className="w-full min-w-[950px] text-left text-sm">
-            <thead className="border-b border-stone-200 bg-stone-50 text-stone-600">
-              <tr>
-                <th className="px-6 py-4 font-medium">Order ID</th>
-                <th className="px-6 py-4 font-medium">Customer</th>
-                <th className="px-6 py-4 font-medium">Date</th>
-                <th className="px-6 py-4 font-medium">Total</th>
-                <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 font-medium">Update Status</th>
-                <th className="px-6 py-4 text-center font-medium">
-                  Details
-                </th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-stone-100">
-              {currentOrders.map((order) => (
-                <tr key={order.id}>
-                  <td className="px-6 py-4 font-medium text-stone-900">
-                    #{order.id}
-                  </td>
-
-                  <td className="px-6 py-4 text-stone-600">
-                    <p className="font-medium text-stone-800">
-                      {order.customerName || "N/A"}
-                    </p>
-
-                    <p className="text-xs text-stone-500">
-                      {order.customerEmail || order.email || ""}
-                    </p>
-                  </td>
-
-                  <td className="px-6 py-4 text-stone-600">
-                    {formatDate(order.createdAt)}
-                  </td>
-
-                  <td className="px-6 py-4 text-stone-600">
-                    ₹{Number(order.totalAmount || 0).toLocaleString("en-IN")}
-                  </td>
-
-                  <td className="px-6 py-4">
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusStyle(order.status)}`}
-                    >
-                      {order.status || "Pending"}
-                    </span>
-                  </td>
-
-                  {/* Status Update */}
-                  <td className="px-6 py-4">
-                    <select
-                      value={order.status || "Pending"}
-                      onChange={(e) =>
-                        handleStatusChange(order, e.target.value)
-                      }
-                      disabled={
-                        order.status === "Cancelled" ||
-                        statusMutation.isPending
-                      }
-                      className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-xs outline-none focus:border-stone-700 disabled:cursor-not-allowed disabled:bg-stone-100"
-                    >
-                      {statuses.map((status) => (
-                        <option key={status} value={status}>
-                          {status}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-
-                  <td className="px-6 py-4 text-center">
-                    <button
-                      onClick={() => setSelectedOrder(order)}
-                      className="font-medium text-stone-800 underline underline-offset-4 hover:text-stone-500"
-                    >
-                      View
-                    </button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1050px] text-left text-sm">
+              <thead className="bg-[#F3EEE5] text-xs uppercase tracking-wider text-[#796858]">
+                <tr>
+                  <th className="px-5 py-4 font-semibold">Order ID</th>
+                  <th className="px-5 py-4 font-semibold">Customer</th>
+                  <th className="px-5 py-4 font-semibold">Date</th>
+                  <th className="px-5 py-4 font-semibold">Total</th>
+                  <th className="px-5 py-4 font-semibold">Status</th>
+                  <th className="px-5 py-4 font-semibold">Update Status</th>
+                  <th className="px-5 py-4 text-center font-semibold">Details</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+
+              <tbody className="divide-y divide-[#E5D9C9]">
+                {currentOrders.map((order) => (
+                  <tr
+                    key={order.id}
+                    className="transition hover:bg-[#F3EEE5]/70"
+                  >
+                    <td className="px-5 py-4 font-semibold text-[#342820]">
+                      #{order.id}
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <p className="font-medium text-[#514236]">
+                        {order.customerName || "N/A"}
+                      </p>
+                      <p className="mt-1 text-xs text-[#8B7A68]">
+                        {order.customerEmail || order.email || ""}
+                      </p>
+                    </td>
+
+                    <td className="px-5 py-4 text-[#796858]">
+                      {formatDate(order.createdAt)}
+                    </td>
+
+                    <td className="px-5 py-4 font-semibold text-[#342820]">
+                      ₹{formatPrice(order.totalAmount)}
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <span
+                        className={`inline-flex rounded-full px-3 py-1.5 text-xs font-semibold ${getStatusStyle(order.status)}`}
+                      >
+                        {order.status || "Pending"}
+                      </span>
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <select
+                        value={order.status || "Pending"}
+                        onChange={(e) =>
+                          handleStatusChange(order, e.target.value)
+                        }
+                        disabled={
+                          order.status === "Cancelled" ||
+                          statusMutation.isPending
+                        }
+                        className="rounded-lg border border-[#D8C8B5] bg-white px-3 py-2 text-xs text-[#342820] outline-none focus:border-[#796858] disabled:cursor-not-allowed disabled:bg-[#F3EEE5]"
+                      >
+                        {statuses.map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+
+                    <td className="px-5 py-4 text-center">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedOrder(order)}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#D8C8B5] px-3 py-2 text-xs font-semibold text-[#796858] transition hover:bg-[#342820] hover:text-[#FAF7F1]"
+                      >
+                        <Eye size={14} />
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
-      </div>
+      </section>
 
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
           <button
+            type="button"
             onClick={() =>
               setCurrentPage((previous) => previous - 1)
             }
             disabled={currentPage === 1}
-            className="rounded-lg border border-stone-300 px-4 py-2 text-sm disabled:opacity-40"
+            className="flex items-center gap-1 rounded-lg border border-[#D8C8B5] bg-[#FAF7F1] px-3 py-2.5 text-sm font-medium text-[#796858] hover:bg-[#E5D9C9] disabled:opacity-40"
           >
+            <ChevronLeft size={16} />
             Previous
           </button>
 
+          {Array.from(
+            { length: totalPages },
+            (_, index) => index + 1
+          ).map((page) => (
+            <button
+              type="button"
+              key={page}
+              onClick={() => setCurrentPage(page)}
+              className={`h-10 min-w-10 rounded-lg px-3 text-sm font-medium ${
+                currentPage === page
+                  ? "bg-[#342820] text-[#FAF7F1]"
+                  : "border border-[#D8C8B5] bg-[#FAF7F1] text-[#796858] hover:bg-[#E5D9C9]"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
 
           <button
+            type="button"
             onClick={() =>
               setCurrentPage((previous) => previous + 1)
             }
             disabled={currentPage === totalPages}
-            className="rounded-lg border border-stone-300 px-4 py-2 text-sm disabled:opacity-40"
+            className="flex items-center gap-1 rounded-lg border border-[#D8C8B5] bg-[#FAF7F1] px-3 py-2.5 text-sm font-medium text-[#796858] hover:bg-[#E5D9C9] disabled:opacity-40"
           >
             Next
+            <ChevronRight size={16} />
           </button>
         </div>
       )}
 
       {/* Order Details Modal */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
-            {/* Modal Heading */}
-            <div className="mb-6 flex items-center justify-between">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#211A15]/60 p-4 backdrop-blur-sm"
+          onClick={() => setSelectedOrder(null)}
+        >
+          <div
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[#E5D9C9] bg-[#FAF7F1] shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-[#E5D9C9] px-5 py-5 md:px-7">
               <div>
-                <h2 className="text-xl font-semibold text-stone-900">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#A49380]">
+                  Order Information
+                </p>
+                <h2 className="mt-1 font-display text-2xl font-semibold text-[#342820]">
                   Order #{selectedOrder.id}
                 </h2>
-
-                <p className="mt-1 text-sm text-stone-500">
-                  {formatDate(selectedOrder.createdAt)}
+                <p className="mt-1 text-xs text-[#8B7A68]">
+                  Placed on {formatDate(selectedOrder.createdAt)}
                 </p>
               </div>
 
               <button
+                type="button"
                 onClick={() => setSelectedOrder(null)}
-                className="text-2xl text-stone-500 hover:text-stone-900"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-[#D8C8B5] text-[#796858] transition hover:bg-[#E5D9C9]"
                 aria-label="Close order details"
               >
-                &times;
+                <X size={18} />
               </button>
             </div>
 
-            {/* Customer Details */}
-            <div className="mb-6 rounded-lg bg-stone-50 p-4">
-              <h3 className="mb-3 font-semibold text-stone-900">
-                Customer Details
-              </h3>
+            <div className="space-y-6 p-5 md:p-7">
+              {/* Customer Details */}
+              <section>
+                <h3 className="mb-3 font-display text-xl font-semibold text-[#342820]">
+                  Customer Details
+                </h3>
 
-              <p className="text-sm text-stone-600">
-                Name: {selectedOrder.customerName || "N/A"}
-              </p>
-
-              <p className="mt-1 text-sm text-stone-600">
-                Email: {selectedOrder.customerEmail || selectedOrder.email || "N/A"}
-              </p>
-
-              <p className="mt-1 text-sm text-stone-600">
-                Phone: {selectedOrder.customerPhone || selectedOrder.phone || "N/A"}
-              </p>
-
-              <p className="mt-1 text-sm text-stone-600">
-                Address: {selectedOrder.address || "N/A"}
-              </p>
-            </div>
-
-            {/* Ordered Products */}
-            <h3 className="mb-3 font-semibold text-stone-900">
-              Ordered Products
-            </h3>
-
-            <div className="space-y-3">
-              {(selectedOrder.items || []).map((item, index) => (
-                <div
-                  key={`${item.id ?? item.productId}-${index}`}
-                  className="flex items-start justify-between gap-4 border-b border-stone-100 pb-3"
-                >
-                  <div>
-                    <p className="font-medium text-stone-800">
-                      {item.name}
-                    </p>
-
-                    <p className="mt-1 text-xs text-stone-500">
-                      Quantity: {item.quantity}
-                    </p>
-
-                    {item.size && (
-                      <p className="text-xs text-stone-500">
-                        Size: {item.size}
+                <div className="grid gap-4 rounded-xl border border-[#E5D9C9] bg-white p-4 sm:grid-cols-2">
+                  <div className="flex items-start gap-3">
+                    <UserRound size={17} className="mt-0.5 text-[#A49380]" />
+                    <div className="min-w-0">
+                      <p className="text-xs text-[#A49380]">Name</p>
+                      <p className="mt-1 break-words text-sm font-medium text-[#342820]">
+                        {selectedOrder.customerName || "N/A"}
                       </p>
-                    )}
-
-                    {item.color && (
-                      <p className="text-xs text-stone-500">
-                        Color: {item.color}
-                      </p>
-                    )}
+                    </div>
                   </div>
 
-                  <p className="whitespace-nowrap text-sm text-stone-700">
-                    ₹{(
-                      Number(item.price) * Number(item.quantity)
-                    ).toLocaleString("en-IN")}
-                  </p>
+                  <div className="flex items-start gap-3">
+                    <Mail size={17} className="mt-0.5 text-[#A49380]" />
+                    <div className="min-w-0">
+                      <p className="text-xs text-[#A49380]">Email</p>
+                      <p className="mt-1 break-all text-sm font-medium text-[#342820]">
+                        {selectedOrder.customerEmail || selectedOrder.email || "N/A"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <Phone size={17} className="mt-0.5 text-[#A49380]" />
+                    <div>
+                      <p className="text-xs text-[#A49380]">Phone</p>
+                      <p className="mt-1 text-sm font-medium text-[#342820]">
+                        {selectedOrder.customerPhone || selectedOrder.phone || "N/A"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 sm:col-span-2">
+                    <MapPin size={17} className="mt-0.5 text-[#A49380]" />
+                    <div>
+                      <p className="text-xs text-[#A49380]">Address</p>
+                      <p className="mt-1 text-sm font-medium text-[#342820]">
+                        {selectedOrder.address || "N/A"}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </div>
+              </section>
 
-            {/* Payment Details */}
-            <div className="mt-6 border-t border-stone-200 pt-4">
-              <div className="flex justify-between text-sm text-stone-600">
-                <span>Payment Method</span>
-                <span>{selectedOrder.paymentMethod || "N/A"}</span>
-              </div>
+              {/* Ordered Products */}
+              <section>
+                <h3 className="mb-3 font-display text-xl font-semibold text-[#342820]">
+                  Ordered Products
+                </h3>
 
-              <div className="mt-3 flex justify-between text-lg font-semibold text-stone-900">
-                <span>Total Amount</span>
+                <div className="space-y-3">
+                  {(selectedOrder.items || []).map((item, index) => (
+                    <div
+                      key={`${item.id ?? item.productId}-${index}`}
+                      className="flex items-start justify-between gap-4 rounded-xl border border-[#E5D9C9] bg-white p-4"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-semibold text-[#342820]">
+                          {item.name}
+                        </p>
 
-                <span>
-                  ₹{Number(selectedOrder.totalAmount || 0).toLocaleString("en-IN")}
-                </span>
-              </div>
+                        <p className="mt-1 text-xs text-[#8B7A68]">
+                          Quantity: {item.quantity}
+                        </p>
 
-              <div className="mt-4">
-                <p className="mb-2 text-sm font-medium text-stone-700">
+                        {item.size && (
+                          <p className="mt-1 text-xs text-[#8B7A68]">
+                            Size: {item.size}
+                          </p>
+                        )}
+
+                        {item.color && (
+                          <p className="mt-1 text-xs text-[#8B7A68]">
+                            Color: {item.color}
+                          </p>
+                        )}
+                      </div>
+
+                      <p className="whitespace-nowrap text-sm font-semibold text-[#342820]">
+                        ₹{formatPrice(
+                          Number(item.price) * Number(item.quantity)
+                        )}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              {/* Payment and Status */}
+              <section className="rounded-xl border border-[#E5D9C9] bg-white p-4">
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="flex items-center gap-2 text-[#796858]">
+                    <CreditCard size={16} />
+                    Payment Method
+                  </span>
+                  <span className="font-medium text-[#342820]">
+                    {selectedOrder.paymentMethod || "N/A"}
+                  </span>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between border-t border-[#E5D9C9] pt-4">
+                  <span className="font-medium text-[#796858]">
+                    Total Amount
+                  </span>
+                  <span className="font-display text-2xl font-semibold text-[#342820]">
+                    ₹{formatPrice(selectedOrder.totalAmount)}
+                  </span>
+                </div>
+              </section>
+
+              <section>
+                <label className="mb-2 block text-sm font-semibold text-[#342820]">
                   Update Order Status
-                </p>
+                </label>
 
                 <select
                   value={selectedOrder.status || "Pending"}
@@ -632,7 +812,7 @@ function AdminOrders() {
                     selectedOrder.status === "Cancelled" ||
                     statusMutation.isPending
                   }
-                  className="w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-sm outline-none focus:border-stone-700 disabled:bg-stone-100"
+                  className="w-full rounded-xl border border-[#D8C8B5] bg-white px-4 py-3 text-sm text-[#342820] outline-none focus:border-[#796858] disabled:bg-[#F3EEE5]"
                 >
                   {statuses.map((status) => (
                     <option key={status} value={status}>
@@ -642,25 +822,26 @@ function AdminOrders() {
                 </select>
 
                 {statusMutation.isPending && (
-                  <p className="mt-2 text-xs text-stone-500">
+                  <p className="mt-2 text-xs text-[#796858]">
                     Updating order...
                   </p>
                 )}
-              </div>
 
-              {actionError && (
-                <p className="mt-3 text-sm text-red-600">
-                  {actionError}
-                </p>
-              )}
+                {actionError && (
+                  <p className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+                    {actionError}
+                  </p>
+                )}
+              </section>
+
+              <button
+                type="button"
+                onClick={() => setSelectedOrder(null)}
+                className="w-full rounded-xl bg-[#342820] px-5 py-3 text-sm font-semibold text-[#FAF7F1] transition hover:bg-[#796858]"
+              >
+                Close Details
+              </button>
             </div>
-
-            <button
-              onClick={() => setSelectedOrder(null)}
-              className="mt-6 w-full rounded-lg bg-stone-900 px-5 py-3 text-sm font-medium text-white hover:bg-stone-700"
-            >
-              Close
-            </button>
           </div>
         </div>
       )}

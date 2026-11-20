@@ -66,7 +66,7 @@
       "price": 2799,
       "description": "Beautiful open abaya featuring delicate floral embroidery.",
       "image": "src/assets/images/dotted.webp",
-      "stock": 0,
+      "stock": 5,
       "rating": 4.8,
       "sizes": [
         "M",
@@ -412,22 +412,6 @@
         "Mauve",
         "Cream"
       ]
-    },
-    {
-      "name": "abc",
-      "category": "Gowns",
-      "price": 2000,
-      "stock": 10,
-      "description": "csdf",
-      "image": "src/assets/images/gown.webp",
-      "sizes": [
-        "S",
-        "M"
-      ],
-      "colors": [
-        "Black"
-      ],
-      "id": "fhMAle1hOZU"
     }
   ],
   "users": [
