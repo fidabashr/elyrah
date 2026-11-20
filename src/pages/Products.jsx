@@ -1,7 +1,9 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
+import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, X } from "lucide-react";
 
 import { getProducts } from "../services/ProductServices";
 import { setProducts } from "../redux/slices/productSlices";
@@ -12,7 +14,6 @@ import EmptyState from "../components/EmptyState";
 
 function Products() {
   const dispatch = useDispatch();
-
   const [searchParams, setSearchParams] = useSearchParams();
 
   const products = useSelector(
@@ -24,8 +25,6 @@ function Products() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const perPage = 8;
-
-  // Read selected category from URL
   const category = searchParams.get("category") || "All";
 
   const {
@@ -39,14 +38,13 @@ function Products() {
     queryFn: getProducts,
   });
 
-  // Store fetched products in Redux
   useEffect(() => {
     if (data) {
       dispatch(setProducts(data));
     }
   }, [data, dispatch]);
 
-  // Get categories from products
+  // Get categories dynamically from products
   const categories = [
     ...new Set(
       products
@@ -55,15 +53,11 @@ function Products() {
     ),
   ];
 
-  
-const allCategories = categories;
-
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [search, category, sort]);
 
-  // Update category in URL
   function handleCategoryChange(value) {
     if (value === "All") {
       setSearchParams({});
@@ -120,7 +114,7 @@ const allCategories = categories;
   }
 
   if (isPending) {
-    return <Loading message="Loading products..." />;
+    return <Loading message="Curating your collection..." />;
   }
 
   if (isError) {
@@ -133,130 +127,183 @@ const allCategories = categories;
   }
 
   return (
-    <main className="min-h-screen bg-stone-50 px-6 py-10">
-      <div className="mx-auto max-w-7xl">
+    <main className="min-h-screen bg-[#F3EEE5]">
 
-        {/* Page Heading */}
-        <div className="mb-10 text-center">
-          <p className="text-sm uppercase tracking-widest text-gray-500">
-            Our Collection
+      {/* Page Heading */}
+      <section className="border-b border-[#D8CBBB] bg-[#EAE1D5] px-5 py-12 md:py-16">
+        <div className="mx-auto max-w-7xl text-center">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-[#796858]">
+            ELYRAH / THE COLLECTION
           </p>
 
-          <h1 className="mt-2 text-3xl font-semibold">
+          <h1 className="font-display text-5xl font-medium text-[#342820] md:text-6xl">
             Modest Fashion
           </h1>
 
-          <p className="mx-auto mt-3 max-w-xl text-gray-600">
-            Discover elegant and comfortable pieces designed
-            for your everyday style.
+          <p className="mx-auto mt-4 max-w-lg text-sm leading-7 text-[#796858] md:text-base">
+            Timeless silhouettes, thoughtful details and
+            effortless elegance. Discover pieces made to
+            complement your everyday style.
           </p>
+
+          <div className="mx-auto mt-6 h-px w-16 bg-[#B7A48D]" />
+        </div>
+      </section>
+
+      {/* Products Section */}
+      <section className="mx-auto max-w-7xl px-4 py-8 md:px-8 md:py-12">
+
+        {/* Filters */}
+        <div className="mb-8 rounded-xl border border-[#DED2C3] bg-[#FAF7F1] p-4 md:p-5">
+
+          <div className="mb-4 flex items-center gap-2">
+            <SlidersHorizontal size={17} className="text-[#796858]" />
+
+            <h2 className="text-sm font-semibold tracking-wide text-[#342820]">
+              Refine Your Selection
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+
+            {/* Search */}
+            <div className="relative">
+              <Search
+                size={18}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#967F6A]"
+              />
+
+              <input
+                type="text"
+                placeholder="Search by product name..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full rounded-lg border border-[#D8CBBB] bg-[#F3EEE5] py-3 pl-11 pr-10 text-sm text-[#342820] outline-none transition placeholder:text-[#A08E7D] focus:border-[#796858] focus:ring-1 focus:ring-[#796858]"
+              />
+
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#796858] hover:text-[#342820]"
+                  aria-label="Clear search"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+
+            {/* Category */}
+            <select
+              value={category}
+              onChange={(e) =>
+                handleCategoryChange(e.target.value)
+              }
+              className="w-full cursor-pointer rounded-lg border border-[#D8CBBB] bg-[#F3EEE5] px-4 py-3 text-sm text-[#342820] outline-none transition focus:border-[#796858]"
+            >
+              <option value="All">All Categories</option>
+
+              {categories.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+
+            {/* Sorting */}
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className="w-full cursor-pointer rounded-lg border border-[#D8CBBB] bg-[#F3EEE5] px-4 py-3 text-sm text-[#342820] outline-none transition focus:border-[#796858]"
+            >
+              <option value="default">Default Sorting</option>
+              <option value="low-high">Price: Low to High</option>
+              <option value="high-low">Price: High to Low</option>
+            </select>
+
+          </div>
         </div>
 
-        {/* Search, Category and Sorting */}
-        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+        {/* Results Header */}
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-[#D8CBBB] pb-4">
 
-          {/* Search */}
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-md border border-stone-300 bg-white px-4 py-3 outline-none focus:border-stone-700"
-          />
+          <div>
+            <h2 className="font-display text-3xl font-semibold text-[#342820]">
+              {category === "All" ? "All Pieces" : category}
+            </h2>
 
-          {/* Category Filter */}
-          <select
-            value={category}
-            onChange={(e) =>
-              handleCategoryChange(e.target.value)
-            }
-            className="w-full rounded-md border border-stone-300 bg-white px-4 py-3"
-          >
-            <option value="All">All Categories</option>
+            <p className="mt-1 text-xs text-[#796858]">
+              Thoughtfully selected for you
+            </p>
+          </div>
 
-            {allCategories.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
+          <p className="text-sm text-[#796858]">
+            <span className="font-semibold text-[#342820]">
+              {filteredProducts.length}
+            </span>{" "}
+            {filteredProducts.length === 1 ? "piece" : "pieces"} found
+          </p>
 
-          {/* Sorting */}
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className="w-full rounded-md border border-stone-300 bg-white px-4 py-3"
-          >
-            <option value="default">Default Sorting</option>
-            <option value="low-high">
-              Price: Low to High
-            </option>
-            <option value="high-low">
-              Price: High to Low
-            </option>
-          </select>
         </div>
 
-        {/* Product Count */}
-        <p className="mb-5 text-sm text-gray-600">
-          Showing {currentProducts.length} of{" "}
-          {filteredProducts.length} products
-        </p>
-
-        {/* Products */}
+        {/* Product Grid */}
         {filteredProducts.length === 0 ? (
-          <EmptyState
-            title="No products found"
-            message="Try changing your search or category filter."
-          />
+          <div className="rounded-xl border border-[#DED2C3] bg-[#FAF7F1] py-12">
+            <EmptyState
+              title="No pieces found"
+              message="Try another search or explore a different category."
+            />
+
+            <div className="mt-5 flex justify-center">
+              <button
+                onClick={() => {
+                  setSearch("");
+                  setSort("default");
+                  setSearchParams({});
+                }}
+                className="rounded-md bg-[#342820] px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[#FAF7F1] transition hover:bg-[#59483B]"
+              >
+                Clear All Filters
+              </button>
+            </div>
+          </div>
         ) : (
           <ProductGrid products={currentProducts} />
         )}
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="mt-10 flex items-center justify-center gap-2">
+          <div className="mt-12 flex items-center justify-center gap-4">
 
-           
             <button
               onClick={() => changePage(currentPage - 1)}
               disabled={currentPage === 1}
-              className="rounded-md border border-stone-300 bg-white px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex items-center gap-2 rounded-md border border-[#B7A48D] bg-[#FAF7F1] px-4 py-2.5 text-sm font-medium text-[#342820] transition hover:bg-[#E5D9C9] disabled:cursor-not-allowed disabled:opacity-40"
             >
+              <ChevronLeft size={16} />
               Previous
             </button>
 
-            {/* Page Numbers */}
-            {/* {Array.from(
-              { length: totalPages },
-              (_, index) => index + 1
-            ).map((page) => (
-              <button
-                key={page}
-                onClick={() => changePage(page)}
-                className={`rounded-md px-4 py-2 text-sm ${
-                  currentPage === page
-                    ? "bg-stone-900 text-white"
-                    : "border border-stone-300 bg-white"
-                }`}
-              >
-                {page}
-              </button>
-            ))} */}
+            <span className="text-sm text-[#796858]">
+              <span className="font-semibold text-[#342820]">
+                {currentPage}
+              </span>
+              {" / "}
+              {totalPages}
+            </span>
 
-            {/* Next */}
             <button
               onClick={() => changePage(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="rounded-md border border-stone-300 bg-white px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex items-center gap-2 rounded-md border border-[#B7A48D] bg-[#FAF7F1] px-4 py-2.5 text-sm font-medium text-[#342820] transition hover:bg-[#E5D9C9] disabled:cursor-not-allowed disabled:opacity-40"
             >
               Next
+              <ChevronRight size={16} />
             </button>
 
           </div>
         )}
 
-      </div>
+      </section>
     </main>
   );
 }

@@ -1,3 +1,4 @@
+
 import { getProductImage } from "../utils/getProductImage";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -7,7 +8,11 @@ import {
   removeFromWishlist,
 } from "../redux/slices/wishlistSlice";
 
-function ProductCard({ product }) {
+function ProductCard({
+  product,
+  averageRating = 0,
+  reviewCount = 0,
+}) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -25,7 +30,6 @@ function ProductCard({ product }) {
     e.preventDefault();
     e.stopPropagation();
 
-    // Require login
     if (!user) {
       navigate("/login");
       return;
@@ -46,16 +50,16 @@ function ProductCard({ product }) {
         <div className="relative h-52 overflow-hidden bg-stone-100 sm:h-64">
 
           {getProductImage(product.image) ? (
-  <img
-    src={getProductImage(product.image)}
-    alt={product.name}
-    className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-  />
-) : (
-  <div className="flex h-full w-full items-center justify-center bg-stone-100 text-sm text-stone-500">
-    Image unavailable
-  </div>
-)}
+            <img
+              src={getProductImage(product.image)}
+              alt={product.name}
+              className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-stone-100 text-sm text-stone-500">
+              Image unavailable
+            </div>
+          )}
 
           {product.stock === 0 && (
             <span className="absolute left-3 top-3 bg-white px-3 py-1 text-xs">
@@ -74,15 +78,34 @@ function ProductCard({ product }) {
             {product.name}
           </h2>
 
-          <div className="mt-2 flex items-center justify-between">
+          {/* Customer rating */}
+          <div className="mt-2 flex items-center gap-1">
 
+            {reviewCount > 0 ? (
+              <>
+                <span className="text-sm text-amber-500">
+                  {"★".repeat(Math.round(averageRating))}
+                  {"☆".repeat(5 - Math.round(averageRating))}
+                </span>
+
+                <span className="text-xs text-stone-600">
+                  {averageRating.toFixed(1)} ({reviewCount})
+                </span>
+              </>
+            ) : (
+              <span className="text-xs text-stone-400">
+                No reviews yet
+              </span>
+            )}
+
+          </div>
+
+          <div className="mt-2">
             <p className="text-sm font-semibold sm:text-base">
               ₹{product.price}
             </p>
-
-         
-
           </div>
+
         </div>
 
       </Link>
@@ -91,11 +114,14 @@ function ProductCard({ product }) {
       <button
         type="button"
         onClick={handleWishlist}
-        aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+        aria-label={
+          isWishlisted
+            ? "Remove from wishlist"
+            : "Add to wishlist"
+        }
         className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white text-xl shadow-sm"
       >
-       
-{isWishlisted ? (
+        {isWishlisted ? (
           <span className="text-red-500">♥</span>
         ) : (
           <span className="text-stone-700">♡</span>
@@ -107,6 +133,3 @@ function ProductCard({ product }) {
 }
 
 export default ProductCard;
-
-
-

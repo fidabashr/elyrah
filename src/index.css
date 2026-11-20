@@ -1,1 +1,73 @@
+
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap");
+
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", sans-serif;
+  --font-display: "Cormorant Garamond", serif;
+
+  --color-elyrah-ivory: #FAF7F1;
+  --color-elyrah-champagne: #F3EEE5;
+  --color-elyrah-sand: #E5D9C9;
+  --color-elyrah-taupe: #B7A48D;
+  --color-elyrah-mocha: #796858;
+  --color-elyrah-espresso: #342820;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: #F3EEE5;
+  color: #342820;
+  font-family: "DM Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background-color: #B7A48D;
+  color: #342820;
+}
+
+:focus-visible {
+  outline: 2px solid #796858;
+  outline-offset: 3px;
+}

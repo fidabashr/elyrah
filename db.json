@@ -125,7 +125,7 @@
       "price": 1599,
       "description": "Elegant satin midi dress with a sophisticated finish.",
       "image": "src/assets/images/stripeMidi.webp",
-      "stock": 9,
+      "stock": 8,
       "rating": 4.5,
       "sizes": [
         "S",
@@ -202,7 +202,7 @@
       "price": 2299,
       "description": "Elegant white gown.",
       "image": "src/assets/images/whiteGown.webp",
-      "stock": 7,
+      "stock": 6,
       "rating": 4.8,
       "sizes": [
         "S",
@@ -412,6 +412,22 @@
         "Mauve",
         "Cream"
       ]
+    },
+    {
+      "name": "abc",
+      "category": "Gowns",
+      "price": 2000,
+      "stock": 10,
+      "description": "csdf",
+      "image": "src/assets/images/gown.webp",
+      "sizes": [
+        "S",
+        "M"
+      ],
+      "colors": [
+        "Black"
+      ],
+      "id": "fhMAle1hOZU"
     }
   ],
   "users": [
@@ -436,7 +452,9 @@
       "email": "ashi23@gmail.com",
       "password": "ashika123",
       "id": "c5XZtcUT-8Q",
-      "blocked": false
+      "blocked": false,
+      "phone": "9747865194",
+      "address": "Bridgeon Solutions,\nMankav , \nNear Lulu Mall,\nCalicut"
     },
     {
       "name": "hani",
@@ -729,6 +747,52 @@
       "status": "Pending",
       "createdAt": "2026-11-11T13:28:17.390Z",
       "id": "__p81g-87cQ"
+    },
+    {
+      "userId": "c5XZtcUT-8Q",
+      "customerName": "ashika",
+      "email": "ashi23@gmail.com",
+      "phone": "9747865194",
+      "address": "Bridgeon Solutions,\nMankav , \nNear Lulu Mall,\nCalicut",
+      "items": [
+        {
+          "id": "15",
+          "name": "white gown",
+          "image": "src/assets/images/whiteGown.webp",
+          "price": 2299,
+          "quantity": 1,
+          "size": "S",
+          "color": "Champagne"
+        }
+      ],
+      "totalAmount": 2299,
+      "paymentMethod": "COD",
+      "status": "Pending",
+      "createdAt": "2026-11-20T04:30:59.901Z",
+      "id": "p_-iO3IwOlM"
+    },
+    {
+      "userId": "c5XZtcUT-8Q",
+      "customerName": "ashika",
+      "email": "ashi23@gmail.com",
+      "phone": "9747865194",
+      "address": "Bridgeon Solutions,\nMankav , \nNear Lulu Mall,\nCalicut",
+      "items": [
+        {
+          "id": "7",
+          "name": "yellow stripe Midi Dress",
+          "image": "src/assets/images/stripeMidi.webp",
+          "price": 1599,
+          "quantity": 1,
+          "size": "S",
+          "color": "Champagne"
+        }
+      ],
+      "totalAmount": 1599,
+      "paymentMethod": "COD",
+      "status": "Pending",
+      "createdAt": "2026-11-20T05:22:49.407Z",
+      "id": "SBquMbzYu4M"
     }
   ],
   "admins": [
@@ -739,5 +803,6 @@
       "password": "admin123"
     }
   ],
+  "reviews": [],
   "$schema": "./node_modules/json-server/schema.json"
 }

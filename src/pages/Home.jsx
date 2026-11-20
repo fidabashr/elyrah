@@ -1,11 +1,19 @@
 
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { getProducts } from "../services/ProductServices";
+import {
+  getProducts,
+} from "../services/ProductServices";
 import ProductGrid from "../components/ProductGrid";
+import {
+  ArrowRight,
+  Sparkles,
+  ShieldCheck,
+  HeartHandshake,
+  Gem,
+} from "lucide-react";
 
 function Home() {
-
   const {
     data: products = [],
     isPending,
@@ -40,86 +48,147 @@ function Home() {
 
   const featuredProducts = products.slice(0, 4);
 
+  const benefits = [
+    {
+      icon: Gem,
+      title: "Thoughtful Quality",
+      description:
+        "Carefully selected pieces designed with comfort and quality in mind.",
+    },
+    {
+      icon: Sparkles,
+      title: "Timeless Elegance",
+      description:
+        "Beautiful designs that bring effortless elegance to every occasion.",
+    },
+    {
+      icon: ShieldCheck,
+      title: "Easy Shopping",
+      description:
+        "Enjoy a simple and convenient shopping experience.",
+    },
+    {
+      icon: HeartHandshake,
+      title: "Here for You",
+      description:
+        "We're always happy to help with your shopping experience.",
+    },
+  ];
+
   return (
-    <main className="bg-stone-50">
+    <main className="overflow-hidden bg-[#F3EEE5]">
 
       {/* HERO SECTION */}
+<section className="relative w-full overflow-hidden">
+  {/* Background Image */}
+  <img
+    src="/src/assets/images/logo.webp"
+    alt="ELYRAH collection"
+    className="block h-auto w-full"
+  />
 
-    <section
-  className="relative min-h-[450px] w-full bg-cover bg-no-repeat sm:min-h-[600px] lg:min-h-[700px]"
-  style={{
-    backgroundImage: "url('/src/assets/images/logo.webp')",
-    backgroundPosition: "55% center",
-  }}
->
-  {/* For Text overlay on image */}
- <div className="absolute left-6 top-1/2 z-10 -translate-y-1/2 sm:left-12 lg:left-20">
+  {/* Image Overlay */}
+  <div className="absolute inset-0 bg-gradient-to-r from-[#F3EEE5]/95 via-[#F3EEE5]/75 to-[#F3EEE5]/10" />
 
-  <p className="mb-4 font-sans text-xs font-medium uppercase tracking-[0.35em] text-[#9B806B]">
-    ELYRAH COLLECTION
-  </p>
+  {/* Hero Content */}
+  <div className="absolute inset-0 mx-auto flex max-w-7xl items-center px-6 py-8 sm:px-10 lg:px-16">
 
-  <h1 className="font-serif text-4xl font-medium leading-tight tracking-wide text-[#49372D] sm:text-5xl lg:text-6xl">
-    Elegance in
-    <br />
-    Every Layer.
-  </h1>
+    <div className="max-w-xl">
 
-  <p className="mt-5 max-w-xs font-sans text-sm leading-7 text-[#75665C] sm:text-base">
-    Discover timeless modest fashion,
-    thoughtfully designed for effortless elegance.
-  </p>
+      <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-[#796858]">
+        THE ELYRAH EDIT
+      </p>
 
-  <Link
-    to="/products"
-    className="mt-7 inline-block bg-[#49372D] px-7 py-3 font-sans text-xs tracking-[0.2em] text-white transition duration-300 hover:bg-[#725746]"
-  >
-    SHOP COLLECTION
-  </Link>
+      <h1 className="font-display text-4xl font-medium leading-[0.98] text-[#342820] sm:text-6xl lg:text-7xl">
+        Elegance in
+        <br />
+        Every Layer.
+      </h1>
 
-</div>
+      <p className="mt-5 max-w-sm text-xs leading-6 text-[#6F5D4E] sm:text-base sm:leading-7">
+        Discover thoughtfully curated modest fashion,
+        where timeless elegance meets everyday comfort.
+      </p>
+
+      <Link
+        to="/products"
+       style={{ color: "#E5D9C9" }}
+  className="mt-7 inline-flex items-center gap-3 bg-[#342820] px-7 py-3.5 text-xs font-semibold tracking-[0.15em] transition duration-300 hover:bg-[#796858]"
+      >
+        EXPLORE COLLECTION
+        <ArrowRight size={16} />
+      </Link>
+
+      <p className="mt-6 text-[10px] tracking-[0.12em] text-[#796858] sm:text-xs">
+        MODESTY · ELEGANCE · COMFORT
+      </p>
+
+    </div>
+  </div>
 </section>
 
 
-      {/* CATEGORIES */}
+      {/* CATEGORY SECTION */}
+      <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 lg:px-12 lg:py-16">
 
-      <section className="px-5 py-14 sm:px-8 lg:px-16">
+        <div className="mb-7 flex items-end justify-between">
 
-        <div className="mb-8 text-center">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#967C63]">
+              FIND YOUR STYLE
+            </p>
 
-          <p className="text-xs uppercase tracking-widest text-stone-500">
-            Explore
-          </p>
+            <h2 className="mt-2 font-display text-3xl font-semibold text-[#342820] sm:text-4xl">
+              Explore Collections
+            </h2>
+          </div>
 
-          <h2 className="mt-2 text-2xl font-semibold text-stone-900 sm:text-3xl">
-            Shop by Category
-          </h2>
+          <Link
+            to="/products"
+            className="mb-1 hidden items-center gap-2 text-xs font-medium text-[#796858] transition hover:text-[#342820] sm:flex"
+          >
+            VIEW ALL
+            <ArrowRight size={15} />
+          </Link>
 
         </div>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 lg:gap-6">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-5">
 
           {categories.map((category) => (
 
             <Link
               key={category.name}
               to={`/products?category=${encodeURIComponent(category.name)}`}
-              className="group overflow-hidden rounded-lg bg-white"
+              className="group"
             >
 
-              <div className="h-48 overflow-hidden sm:h-64">
+              <div className="relative overflow-hidden bg-[#E5D9C9]">
 
-                <img
-                  src={category.image}
-                  alt={category.name}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                />
+                <div className="aspect-[3/4] overflow-hidden">
+
+                  <img
+                    src={category.image}
+                    alt={category.name}
+                    className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                  />
+
+                </div>
+
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#342820]/70 to-transparent px-3 pb-4 pt-12 sm:px-4">
+
+                  <h3 className="font-display text-xl font-semibold text-[#FAF7F1] sm:text-2xl">
+                    {category.name}
+                  </h3>
+
+                  <p className="mt-1 flex items-center gap-1 text-[10px] uppercase tracking-widest text-[#F3EEE5]">
+                    DISCOVER
+                    <ArrowRight size={12} />
+                  </p>
+
+                </div>
 
               </div>
-
-              <h3 className="py-4 text-center text-sm font-medium text-stone-800">
-                {category.name}
-              </h3>
 
             </Link>
 
@@ -131,145 +200,143 @@ function Home() {
 
 
       {/* FEATURED PRODUCTS */}
+      <section className="bg-[#EAE1D5]">
 
-      <section className="bg-white px-5 py-14 sm:px-8 lg:px-16">
+        <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8 lg:px-12 lg:py-16">
 
-        <div className="mb-8 flex items-end justify-between">
+          <div className="mb-7 flex items-end justify-between">
 
-          <div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#967C63]">
+                HANDPICKED FOR YOU
+              </p>
 
-            <p className="text-xs uppercase tracking-widest text-stone-500">
-              Our Selection
-            </p>
+              <h2 className="mt-2 font-display text-3xl font-semibold text-[#342820] sm:text-4xl">
+                Featured Pieces
+              </h2>
 
-            <h2 className="mt-2 text-2xl font-semibold text-stone-900 sm:text-3xl">
-              Featured Products
-            </h2>
+              <p className="mt-2 text-sm text-[#796858]">
+                Discover pieces you'll love wearing.
+              </p>
+            </div>
+
+            <Link
+              to="/products"
+              className="mb-1 inline-flex items-center gap-2 text-xs font-semibold text-[#59483B] transition hover:text-[#342820]"
+            >
+              VIEW ALL
+              <ArrowRight size={15} />
+            </Link>
 
           </div>
 
-          <Link
-            to="/products"
-            className="text-xs font-medium text-stone-700 underline sm:text-sm"
-          >
-            View All
-          </Link>
+          {isPending ? (
+
+            <p className="py-10 text-center text-sm text-[#796858]">
+              Discovering your collection...
+            </p>
+
+          ) : isError ? (
+
+            <p className="py-10 text-center text-sm text-red-800">
+              Unable to load products. Please try again.
+            </p>
+
+          ) : featuredProducts.length === 0 ? (
+
+            <p className="py-10 text-center text-sm text-[#796858]">
+              No featured products available yet.
+            </p>
+
+          ) : (
+
+            <ProductGrid products={featuredProducts} />
+
+          )}
 
         </div>
-
-        {isPending ? (
-
-          <p className="py-10 text-center text-stone-500">
-            Loading products...
-          </p>
-
-        ) : isError ? (
-
-          <p className="py-10 text-center text-red-600">
-            Unable to load products.
-          </p>
-
-        ) : featuredProducts.length === 0 ? (
-
-          <p className="py-10 text-center text-stone-500">
-            No featured products available.
-          </p>
-
-        ) : (
-
-          <ProductGrid products={featuredProducts} />
-
-        )}
 
       </section>
 
 
       {/* PROMOTIONAL BANNER */}
+      <section className="px-5 py-12 sm:px-8 lg:px-12 lg:py-16">
 
-      <section className="px-5 py-14 sm:px-8 lg:px-16">
+        <div className="relative mx-auto max-w-7xl overflow-hidden bg-[#D8C8B5] px-6 py-12 text-center sm:px-12 sm:py-16">
 
-        <div className="rounded-lg bg-stone-200 px-6 py-14 text-center sm:px-12 sm:py-20">
+          <div className="relative z-10 mx-auto max-w-2xl">
 
-          <p className="text-xs uppercase tracking-widest text-stone-500">
-            New Collection
-          </p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#796858]">
+              A LITTLE SOMETHING SPECIAL
+            </p>
 
-          <h2 className="mt-3 text-3xl font-semibold text-stone-900 sm:text-4xl">
-            Elegance Meets Comfort
-          </h2>
+            <h2 className="mt-4 font-display text-4xl font-medium leading-tight text-[#342820] sm:text-5xl lg:text-6xl">
+              Style That Feels Like You.
+            </h2>
 
-          <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-stone-600">
-            Find beautiful pieces that complement your
-            style and make every moment special.
-          </p>
+            <p className="mx-auto mt-4 max-w-md text-sm leading-7 text-[#59483B]">
+              From everyday essentials to special occasion
+              pieces, find styles that reflect your elegance.
+            </p>
 
-          <Link
-            to="/products"
-            className="mt-7 inline-block rounded-md bg-stone-900 px-7 py-3 text-sm text-white transition hover:bg-stone-700"
-          >
-            Explore Collection
-          </Link>
+           <Link
+  to="/products"
+  style={{ color: "#E5D9C9" }}
+  className="mt-7 inline-flex items-center gap-3 bg-[#342820] px-7 py-3.5 text-xs font-semibold tracking-[0.15em] transition duration-300 hover:bg-[#796858]"
+>
+  DISCOVER ELYRAH
+  <ArrowRight size={16} />
+</Link>
+          </div>
 
         </div>
 
       </section>
 
 
-      {/* WHY CHOOSE US */}
+      {/* WHY CHOOSE ELYRAH */}
+      <section className="border-t border-[#E5D9C9] bg-[#F3EEE5] px-5 py-12 sm:px-8 lg:px-12 lg:py-16">
 
-      <section className="px-5 py-14 sm:px-8 lg:px-16">
+        <div className="mx-auto max-w-7xl">
 
-        <h2 className="mb-10 text-center text-2xl font-semibold text-stone-900 sm:text-3xl">
-          Why Choose Elyrah?
-        </h2>
+          <div className="mb-9 text-center">
 
-        <div className="grid grid-cols-1 gap-8 text-center sm:grid-cols-2 lg:grid-cols-4">
-
-          <div>
-
-            <h3 className="font-semibold text-stone-800">
-              Quality Fabrics
-            </h3>
-
-            <p className="mt-2 text-sm text-stone-500">
-              Carefully selected materials for comfort.
+            <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#967C63]">
+              THE ELYRAH EXPERIENCE
             </p>
+
+            <h2 className="mt-2 font-display text-3xl font-semibold text-[#342820] sm:text-4xl">
+              More Than Just Fashion
+            </h2>
 
           </div>
 
-          <div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
-            <h3 className="font-semibold text-stone-800">
-              Timeless Designs
-            </h3>
+            {benefits.map((benefit) => {
+              const Icon = benefit.icon;
 
-            <p className="mt-2 text-sm text-stone-500">
-              Elegant styles for every occasion.
-            </p>
+              return (
+                <div
+                  key={benefit.title}
+                  className="border border-[#E5D9C9] bg-[#FAF7F1] px-5 py-7 text-center transition duration-300 hover:border-[#B7A48D] hover:shadow-sm"
+                >
 
-          </div>
+                  <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-[#EAE1D5] text-[#796858]">
+                    <Icon size={20} strokeWidth={1.5} />
+                  </div>
 
-          <div>
+                  <h3 className="mt-4 font-display text-xl font-semibold text-[#342820]">
+                    {benefit.title}
+                  </h3>
 
-            <h3 className="font-semibold text-stone-800">
-              Secure Shopping
-            </h3>
+                  <p className="mx-auto mt-2 max-w-xs text-xs leading-6 text-[#796858]">
+                    {benefit.description}
+                  </p>
 
-            <p className="mt-2 text-sm text-stone-500">
-              A smooth and convenient shopping experience.
-            </p>
-
-          </div>
-
-          <div>
-
-            <h3 className="font-semibold text-stone-800">
-              Customer Support
-            </h3>
-
-            <p className="mt-2 text-sm text-stone-500">
-              We're here to help with your shopping.
-            </p>
+                </div>
+              );
+            })}
 
           </div>
 

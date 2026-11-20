@@ -1,8 +1,17 @@
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import {
+  ShoppingBag,
+  Package,
+  CalendarDays,
+  ArrowRight,
+  Star,
+  Trash2,
+  ShoppingCart,
+} from "lucide-react";
 
 import {
   getOrders,
@@ -11,6 +20,10 @@ import {
 
 import { updateProductStock } from "../services/ProductServices";
 import { getProductImage } from "../utils/getProductImage";
+import {
+  getUserReviews,
+  createReview,
+} from "../services/reviewServices";
 
 function Orders() {
   const user = useSelector((state) => state.auth.user);
@@ -18,7 +31,11 @@ function Orders() {
 
   const [cancellingOrderId, setCancellingOrderId] = useState(null);
   const [error, setError] = useState("");
+  const [activeReviewKey, setActiveReviewKey] = useState(null);
+  const [reviewDrafts, setReviewDrafts] = useState({});
+  const [reviewError, setReviewError] = useState("");
 
+  // Fetch customer orders
   const {
     data: orders = [],
     isLoading,
@@ -29,7 +46,36 @@ function Orders() {
     enabled: Boolean(user?.id),
   });
 
-  // Cancel order
+  // Fetch reviews submitted by the customer
+  const {
+    data: userReviews = [],
+    isPending: isUserReviewsPending,
+    isError: isUserReviewsError,
+  } = useQuery({
+    queryKey: ["userReviews", String(user?.id)],
+    queryFn: () => getUserReviews(user.id),
+    enabled: Boolean(user?.id),
+  });
+
+  // Submit product review
+  const reviewMutation = useMutation({
+    mutationFn: createReview,
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["userReviews", String(user.id)],
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ["productReviews"],
+      });
+
+      setActiveReviewKey(null);
+      setReviewError("");
+    },
+  });
+
+  // Cancel order and restore stock
   const handleCancelOrder = async (order) => {
     const confirmed = window.confirm(
       `Are you sure you want to cancel order #${order.id}?`
@@ -47,19 +93,22 @@ function Orders() {
         throw new Error("Only pending orders can be cancelled.");
       }
 
-      // Group quantities by product ID.
-      // Different sizes and colours share the same product stock.
+      if (order.stockRestored) {
+        throw new Error("Stock has already been restored for this order.");
+      }
+
+      // Group quantities by product ID
       const requiredStock = {};
 
       (order.items || []).forEach((item) => {
-        const productId = String(item.id);
+        const productId = String(item.id || item.productId);
 
         requiredStock[productId] =
           (requiredStock[productId] || 0) +
           Number(item.quantity);
       });
 
-      // Read current stock before restoring it.
+      // Get current stock
       const stockUpdates = [];
 
       for (const [productId, quantity] of Object.entries(requiredStock)) {
@@ -92,13 +141,13 @@ function Orders() {
         restoredProducts.push(product);
       }
 
-      // Update order status after stock restoration
-    await updateOrderStatus(order.id, {
-  status: "Cancelled",
-  stockRestored: true,
-});
+      // Update order status
+      await updateOrderStatus(order.id, {
+        status: "Cancelled",
+        stockRestored: true,
+      });
 
-      // Refresh orders and product lists
+      // Refresh relevant data
       await queryClient.invalidateQueries({
         queryKey: ["orders", String(user.id)],
       });
@@ -107,7 +156,7 @@ function Orders() {
         queryKey: ["products"],
       });
     } catch (err) {
-      // Roll back restored stock if cancellation fails.
+      // Roll back stock if cancellation fails
       for (const product of [...restoredProducts].reverse()) {
         try {
           await updateProductStock(
@@ -131,39 +180,93 @@ function Orders() {
     }
   };
 
+  // Submit product review
+  function handleReviewSubmit(e, order, item) {
+    e.preventDefault();
+
+    const reviewKey = `${order.id}-${item.id || item.productId}`;
+
+    const draft = reviewDrafts[reviewKey] || {
+      rating: 0,
+      comment: "",
+    };
+
+    if (!draft.rating) {
+      setReviewError("Please select a star rating.");
+      return;
+    }
+
+    const alreadyReviewed = userReviews.some(
+      (review) =>
+        String(review.orderId) === String(order.id) &&
+        String(review.productId) === String(item.id || item.productId)
+    );
+
+    if (alreadyReviewed) {
+      setReviewError("You have already reviewed this product.");
+      return;
+    }
+
+    setReviewError("");
+
+    reviewMutation.mutate({
+      productId: String(item.id || item.productId),
+      userId: String(user.id),
+      orderId: String(order.id),
+      productName: item.name,
+      customerName: order.customerName || user.name || "Customer",
+      rating: Number(draft.rating),
+      comment: draft.comment.trim(),
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  // Login check
   if (!user) {
     return (
-      <div className="min-h-screen bg-stone-50 px-4 py-20 text-center">
-        <h2 className="text-2xl font-semibold text-stone-900">
-          Please Login
-        </h2>
+      <section className="flex min-h-[65vh] items-center justify-center bg-[#F3EEE5] px-4">
+        <div className="text-center">
+          <ShoppingBag
+            size={42}
+            strokeWidth={1.2}
+            className="mx-auto text-[#796858]"
+          />
 
-        <p className="mt-3 text-gray-500">
-          Login to view your orders.
-        </p>
+          <h2 className="mt-5 font-display text-3xl text-[#342820]">
+            Your Orders
+          </h2>
 
-        <Link
-          to="/login"
-          className="mt-6 inline-block rounded-md bg-stone-900 px-6 py-3 text-sm text-white hover:bg-stone-700"
-        >
-          Login
-        </Link>
-      </div>
+          <p className="mt-2 text-sm text-[#796858]">
+            Please login to view your purchases.
+          </p>
+
+          <Link
+            to="/login"
+            className="mt-6 inline-flex items-center gap-2 bg-[#342820] px-7 py-3 text-sm font-medium text-[#FAF7F1] transition hover:bg-[#59483B]"
+          >
+            Login <ArrowRight size={16} />
+          </Link>
+        </div>
+      </section>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="py-20 text-center text-gray-500">
-        Loading your orders...
+      <div className="flex min-h-[60vh] items-center justify-center bg-[#F3EEE5]">
+        <p className="text-sm text-[#796858]">
+          Loading your orders...
+        </p>
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="py-20 text-center text-red-500">
-        Unable to load your orders. Please try again.
+      <div className="flex min-h-[60vh] items-center justify-center bg-[#F3EEE5] px-4 text-center">
+        <p className="text-sm text-red-700">
+          Unable to load your orders. Please try again.
+        </p>
       </div>
     );
   }
@@ -174,77 +277,113 @@ function Orders() {
       new Date(a.createdAt || 0)
   );
 
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case "Delivered":
+        return "bg-[#E4E9DE] text-[#455B3D]";
+      case "Cancelled":
+        return "bg-[#F2E1DC] text-[#9B5144]";
+      case "Shipped":
+        return "bg-[#E1E8ED] text-[#496477]";
+      case "Processing":
+        return "bg-[#EAE2D5] text-[#796044]";
+      default:
+        return "bg-[#F2EBD9] text-[#8A6B32]";
+    }
+  };
+
   return (
-    <section className="min-h-screen bg-stone-50 px-4 py-12">
+    <section className="min-h-screen bg-[#F3EEE5] px-4 py-10 sm:px-6 lg:py-14">
       <div className="mx-auto max-w-6xl">
-        {/* Heading */}
-        <div className="mb-10">
-          <p className="text-sm uppercase tracking-[0.25em] text-stone-500">
-            ELYRAH
+
+        {/* Page Heading */}
+        <div className="mb-9 border-b border-[#D8C9B8] pb-7">
+          <p className="text-xs font-medium uppercase tracking-[0.3em] text-[#967C63]">
+            ELYRAH / YOUR ACCOUNT
           </p>
 
-          <h1 className="mt-3 text-3xl font-semibold text-stone-900">
-            My Orders
-          </h1>
+          <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h1 className="font-display text-4xl font-semibold text-[#342820] sm:text-5xl">
+                My Orders
+              </h1>
 
-          <p className="mt-2 text-sm text-gray-500">
-            View your purchases and order details.
-          </p>
+              <p className="mt-2 text-sm text-[#796858]">
+                Keep track of your purchases and reviews.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm text-[#796858]">
+              <Package size={18} />
+              {sortedOrders.length}{" "}
+              {sortedOrders.length === 1 ? "Order" : "Orders"}
+            </div>
+          </div>
         </div>
 
+        {/* Cancellation Error */}
         {error && (
-          <div className="mb-6 rounded-md bg-red-50 p-4 text-sm text-red-600">
+          <div className="mb-6 border border-red-200 bg-[#F8EAE6] px-5 py-4 text-sm text-red-700">
             {error}
           </div>
         )}
 
-        {/* Empty State */}
+        {/* Empty Orders */}
         {sortedOrders.length === 0 ? (
-          <div className="rounded-xl border border-stone-200 bg-white px-6 py-16 text-center">
-            <h2 className="text-xl font-semibold text-stone-900">
-              No orders yet
+          <div className="border border-[#E0D5C7] bg-[#FAF7F1] px-5 py-16 text-center">
+            <ShoppingBag
+              size={44}
+              strokeWidth={1.2}
+              className="mx-auto text-[#A18B73]"
+            />
+
+            <h2 className="mt-5 font-display text-3xl text-[#342820]">
+              No Orders Yet
             </h2>
 
-            <p className="mt-3 text-sm text-gray-500">
-              Your orders will appear here after you make a purchase.
+            <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#796858]">
+              Your purchases will appear here. Explore our collection
+              and find something you love.
             </p>
 
             <Link
               to="/products"
-              className="mt-7 inline-block rounded-md bg-stone-900 px-6 py-3 text-sm text-white transition hover:bg-stone-700"
+              className="mt-7 inline-flex items-center gap-2 bg-[#342820] px-7 py-3 text-sm font-medium text-[#FAF7F1] transition hover:bg-[#59483B]"
             >
-              Start Shopping
+              Explore Collection <ArrowRight size={16} />
             </Link>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-7">
+
             {sortedOrders.map((order) => {
               const isPending = order.status === "Pending";
               const isCancelled = order.status === "Cancelled";
 
               return (
-                <div
+                <article
                   key={order.id}
-                  className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm"
+                  className="overflow-hidden border border-[#E0D5C7] bg-[#FAF7F1] shadow-[0_3px_14px_rgba(52,40,32,0.04)]"
                 >
                   {/* Order Header */}
-                  <div className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 bg-stone-100 px-6 py-5">
+                  <div className="flex flex-wrap items-center justify-between gap-5 border-b border-[#E5D9C9] bg-[#EAE1D5] px-5 py-5 sm:px-7">
                     <div>
-                      <p className="text-xs uppercase tracking-wider text-gray-500">
-                        Order ID
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#796858]">
+                        Order Number
                       </p>
 
-                      <p className="mt-1 font-semibold text-stone-900">
+                      <p className="mt-1 text-sm font-semibold text-[#342820]">
                         #{order.id}
                       </p>
                     </div>
 
                     <div>
-                      <p className="text-xs uppercase tracking-wider text-gray-500">
+                      <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#796858]">
+                        <CalendarDays size={13} />
                         Order Date
                       </p>
 
-                      <p className="mt-1 text-sm text-stone-900">
+                      <p className="mt-1 text-sm text-[#342820]">
                         {order.createdAt
                           ? new Date(order.createdAt).toLocaleDateString(
                               "en-IN",
@@ -259,202 +398,329 @@ function Orders() {
                     </div>
 
                     <div>
-                      <p className="text-xs uppercase tracking-wider text-gray-500">
-                        Order Status
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#796858]">
+                        Status
                       </p>
 
                       <span
-                        className={`mt-1 inline-block rounded-full px-3 py-1 text-xs font-medium ${
-                          isCancelled
-                            ? "bg-red-100 text-red-700"
-                            : isPending
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-green-100 text-green-800"
-                        }`}
+                        className={`mt-1 inline-block rounded-full px-3 py-1.5 text-xs font-medium ${getStatusStyle(order.status)}`}
                       >
                         {order.status || "Pending"}
                       </span>
                     </div>
                   </div>
 
-                  <div className="grid gap-8 p-6 lg:grid-cols-3">
+                  <div className="p-5 sm:p-7">
+
                     {/* Ordered Products */}
-                    <div className="lg:col-span-2">
-                      <h2 className="mb-5 text-lg font-semibold text-stone-900">
+                    <div>
+                      <h2 className="mb-5 font-display text-2xl font-semibold text-[#342820]">
                         Ordered Items
                       </h2>
 
-                      <div className="space-y-5">
+                      <div className="space-y-6">
                         {(order.items || []).map((item, index) => {
                           const imageUrl = getProductImage(item.image);
+                          const productId = item.id || item.productId;
+                          const reviewKey = `${order.id}-${productId}`;
+
+                          const existingReview = userReviews.find(
+                            (review) =>
+                              String(review.orderId) === String(order.id) &&
+                              String(review.productId) === String(productId)
+                          );
+
+                          const draft = reviewDrafts[reviewKey] || {
+                            rating: 0,
+                            comment: "",
+                          };
 
                           return (
                             <div
-                              key={`${item.id || item.productId || "item"}-${index}`}
-                              className="flex gap-4 border-b border-stone-100 pb-5 last:border-0"
+                              key={`${productId || "item"}-${index}`}
+                              className="border-b border-[#E8DED2] pb-6 last:border-0 last:pb-0"
                             >
-                              {/* Product Image */}
-                              <div className="h-28 w-24 shrink-0 overflow-hidden rounded-md bg-stone-100">
-                                {imageUrl ? (
-                                  <img
-                                    src={imageUrl}
-                                    alt={item.name}
-                                    className="h-full w-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="flex h-full items-center justify-center text-xs text-stone-500">
-                                    Image unavailable
+                              <div className="flex flex-col gap-4 sm:flex-row">
+
+                                {/* Clickable Product Image */}
+                                <Link
+                                  to={`/products/${productId}`}
+                                  className="group h-36 w-full shrink-0 overflow-hidden bg-[#EAE1D5] sm:h-36 sm:w-28"
+                                  aria-label={`View ${item.name}`}
+                                >
+                                  {imageUrl ? (
+                                    <img
+                                      src={imageUrl}
+                                      alt={item.name}
+                                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                                    />
+                                  ) : (
+                                    <div className="flex h-full items-center justify-center text-xs text-[#796858]">
+                                      Image unavailable
+                                    </div>
+                                  )}
+                                </Link>
+
+                                {/* Product Information */}
+                                <div className="flex min-w-0 flex-1 flex-col justify-center">
+                                  <Link
+                                    to={`/products/${productId}`}
+                                    className="w-fit font-display text-xl font-semibold text-[#342820] transition hover:text-[#967C63]"
+                                  >
+                                    {item.name}
+                                  </Link>
+
+                                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#796858]">
+                                    {item.size && (
+                                      <span>Size: {item.size}</span>
+                                    )}
+
+                                    {item.color && (
+                                      <span>Color: {item.color}</span>
+                                    )}
+
+                                    <span>Quantity: {item.quantity}</span>
                                   </div>
-                                )}
+
+                                  <p className="mt-3 text-sm font-semibold text-[#342820]">
+                                    ₹
+                                    {(
+                                      Number(item.price) *
+                                      Number(item.quantity)
+                                    ).toLocaleString("en-IN")}
+                                  </p>
+
+                                  <Link
+                                    to={`/products/${productId}`}
+                                    className="mt-2 inline-flex w-fit items-center gap-1 text-xs font-medium text-[#967C63] transition hover:text-[#342820]"
+                                  >
+                                    View Product <ArrowRight size={13} />
+                                  </Link>
+                                </div>
                               </div>
 
-                              {/* Product Information */}
-                              <div className="flex min-w-0 flex-1 flex-col justify-center">
-                                <h3 className="font-medium text-stone-900">
-                                  {item.name}
-                                </h3>
+                              {/* Product Review */}
+                              {order.status === "Delivered" && (
+                                <div className="mt-5 border-t border-[#E8DED2] pt-4">
 
-                                {item.size && (
-                                  <p className="mt-1 text-sm text-gray-500">
-                                    Size: {item.size}
-                                  </p>
-                                )}
+                                  {isUserReviewsPending ? (
+                                    <p className="text-xs text-[#796858]">
+                                      Checking review status...
+                                    </p>
+                                  ) : isUserReviewsError ? (
+                                    <p className="text-xs text-red-600">
+                                      Unable to check your review status.
+                                    </p>
+                                  ) : existingReview ? (
+                                    <div className="border border-[#E0D5C7] bg-[#F3EEE5] p-4">
+                                      <p className="text-sm font-medium text-[#455B3D]">
+                                        You have reviewed this product
+                                      </p>
 
-                                {item.color && (
-                                  <p className="text-sm text-gray-500">
-                                    Color: {item.color}
-                                  </p>
-                                )}
+                                      <p className="mt-2 flex gap-1 text-[#B18A42]">
+                                        {Array.from({ length: 5 }, (_, i) => (
+                                          <Star
+                                            key={i}
+                                            size={15}
+                                            fill={
+                                              i < Number(existingReview.rating)
+                                                ? "currentColor"
+                                                : "none"
+                                            }
+                                          />
+                                        ))}
+                                      </p>
 
-                                <p className="mt-1 text-sm text-gray-500">
-                                  Quantity: {item.quantity}
-                                </p>
+                                      {existingReview.comment && (
+                                        <p className="mt-2 text-sm leading-6 text-[#796858]">
+                                          {existingReview.comment}
+                                        </p>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setActiveReviewKey(
+                                            activeReviewKey === reviewKey
+                                              ? null
+                                              : reviewKey
+                                          );
 
-                                <p className="mt-2 font-semibold text-stone-900">
-                                  ₹
-                                  {(
-                                    Number(item.price) *
-                                    Number(item.quantity)
-                                  ).toLocaleString("en-IN")}
-                                </p>
-                              </div>
+                                          setReviewError("");
+                                        }}
+                                        className="text-sm font-medium text-[#796858] underline underline-offset-4 transition hover:text-[#342820]"
+                                      >
+                                        {activeReviewKey === reviewKey
+                                          ? "Close Review"
+                                          : "Write a Review"}
+                                      </button>
+
+                                      {activeReviewKey === reviewKey && (
+                                        <form
+                                          onSubmit={(e) =>
+                                            handleReviewSubmit(e, order, item)
+                                          }
+                                          className="mt-4 space-y-4 border border-[#E0D5C7] bg-[#F3EEE5] p-4 sm:p-5"
+                                        >
+                                          <h4 className="font-display text-xl font-semibold text-[#342820]">
+                                            Share Your Experience
+                                          </h4>
+
+                                          {/* Star Rating */}
+                                          <div>
+                                            <p className="mb-2 text-xs font-medium text-[#796858]">
+                                              Your Rating
+                                            </p>
+
+                                            <div className="flex gap-2">
+                                              {[1, 2, 3, 4, 5].map((star) => (
+                                                <button
+                                                  key={star}
+                                                  type="button"
+                                                  onClick={() => {
+                                                    setReviewDrafts((prev) => ({
+                                                      ...prev,
+                                                      [reviewKey]: {
+                                                        ...prev[reviewKey],
+                                                        rating: star,
+                                                        comment:
+                                                          prev[reviewKey]
+                                                            ?.comment || "",
+                                                      },
+                                                    }));
+
+                                                    setReviewError("");
+                                                  }}
+                                                  aria-label={`Rate ${star} out of 5 stars`}
+                                                  className={`transition hover:scale-110 ${
+                                                    star <= draft.rating
+                                                      ? "text-[#B18A42]"
+                                                      : "text-[#C9BBAA]"
+                                                  }`}
+                                                >
+                                                  <Star
+                                                    size={25}
+                                                    fill={
+                                                      star <= draft.rating
+                                                        ? "currentColor"
+                                                        : "none"
+                                                    }
+                                                  />
+                                                </button>
+                                              ))}
+                                            </div>
+
+                                            <p className="mt-1 text-xs text-[#967C63]">
+                                              {draft.rating
+                                                ? `${draft.rating} out of 5 stars`
+                                                : "Select your rating"}
+                                            </p>
+                                          </div>
+
+                                          {/* Review Comment */}
+                                          <textarea
+                                            value={draft.comment}
+                                            onChange={(e) => {
+                                              setReviewDrafts((prev) => ({
+                                                ...prev,
+                                                [reviewKey]: {
+                                                  ...prev[reviewKey],
+                                                  rating:
+                                                    prev[reviewKey]?.rating || 0,
+                                                  comment: e.target.value,
+                                                },
+                                              }));
+                                            }}
+                                            placeholder="Write about your experience (optional)"
+                                            rows={3}
+                                            maxLength={500}
+                                            className="w-full resize-none border border-[#D8C9B8] bg-[#FAF7F1] p-3 text-sm text-[#342820] outline-none placeholder:text-[#A18B73] focus:border-[#796858]"
+                                          />
+
+                                          {reviewError && (
+                                            <p className="text-sm text-red-600">
+                                              {reviewError}
+                                            </p>
+                                          )}
+
+                                          {reviewMutation.isError && (
+                                            <p className="text-sm text-red-600">
+                                              {reviewMutation.error.message}
+                                            </p>
+                                          )}
+
+                                          <button
+                                            type="submit"
+                                            disabled={reviewMutation.isPending}
+                                            className="w-full bg-[#342820] px-5 py-3 text-sm font-medium text-[#FAF7F1] transition hover:bg-[#59483B] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                                          >
+                                            {reviewMutation.isPending
+                                              ? "Submitting..."
+                                              : "Submit Review"}
+                                          </button>
+                                        </form>
+                                      )}
+                                    </>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           );
                         })}
                       </div>
                     </div>
 
-                    {/* Customer and Delivery Details */}
-                    <div className="space-y-6">
+                    {/* Order Summary */}
+                    <div className="mt-7 flex flex-col gap-4 border-t border-[#D8C9B8] pt-5 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <h2 className="mb-4 text-lg font-semibold text-stone-900">
-                          Customer Details
-                        </h2>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#967C63]">
+                          Order Total
+                        </p>
 
-                        <div className="space-y-3 text-sm">
-                          <div>
-                            <p className="text-xs text-gray-500">
-                              Full Name
-                            </p>
-                            <p className="mt-1 font-medium text-stone-900">
-                              {order.customerName || "Not provided"}
-                            </p>
-                          </div>
-
-                          <div>
-                            <p className="text-xs text-gray-500">
-                              Email Address
-                            </p>
-                            <p className="mt-1 break-all text-stone-900">
-                              {order.email || "Not provided"}
-                            </p>
-                          </div>
-
-                          <div>
-                            <p className="text-xs text-gray-500">
-                              Phone Number
-                            </p>
-                            <p className="mt-1 text-stone-900">
-                              {order.phone || "Not provided"}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="border-t border-stone-200 pt-5">
-                        <h2 className="mb-3 text-lg font-semibold text-stone-900">
-                          Delivery Address
-                        </h2>
-
-                        <p className="whitespace-pre-line text-sm leading-6 text-gray-600">
-                          {order.address || "Address not provided"}
+                        <p className="mt-1 font-display text-3xl font-semibold text-[#342820]">
+                          ₹
+                          {Number(order.totalAmount || 0).toLocaleString(
+                            "en-IN"
+                          )}
                         </p>
                       </div>
 
-                      {/* Payment Details */}
-                      <div className="border-t border-stone-200 pt-5">
-                        <h2 className="mb-3 text-lg font-semibold text-stone-900">
-                          Payment Details
-                        </h2>
-
-                        <div className="flex justify-between gap-3 text-sm">
-                          <span className="text-gray-500">
-                            Payment Method
-                          </span>
-
-                          <span className="font-medium text-stone-900">
-                            {order.paymentMethod || "COD"}
-                          </span>
-                        </div>
-
-                        <div className="mt-3 flex justify-between gap-3 text-sm">
-                          <span className="text-gray-500">
-                            Payment Status
-                          </span>
-
-                          <span className="font-medium text-stone-900">
-                            {order.paymentStatus || "Pending"}
-                          </span>
-                        </div>
-
-                        <div className="mt-5 border-t border-stone-200 pt-4">
-                          <div className="flex justify-between text-base font-semibold text-stone-900">
-                            <span>Total Amount</span>
-
-                            <span>
-                              ₹
-                              {Number(order.totalAmount || 0).toLocaleString(
-                                "en-IN"
-                              )}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Cancel Order */}
-                      {isPending && (
-                        <div className="border-t border-stone-200 pt-5">
+                      <div className="flex flex-wrap items-center gap-3">
+                        {isPending && (
                           <button
                             type="button"
                             onClick={() => handleCancelOrder(order)}
                             disabled={cancellingOrderId === order.id}
-                            className="w-full rounded-md border border-red-300 px-5 py-3 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex items-center justify-center gap-2 border border-[#B77A6B] px-5 py-3 text-sm font-medium text-[#9B5144] transition hover:bg-[#F2E1DC] disabled:cursor-not-allowed disabled:opacity-50"
                           >
+                            <Trash2 size={15} />
+
                             {cancellingOrderId === order.id
                               ? "Cancelling..."
                               : "Cancel Order"}
                           </button>
-                        </div>
-                      )}
+                        )}
 
-                      {isCancelled && (
-                        <p className="border-t border-stone-200 pt-5 text-sm font-medium text-red-600">
-                          This order has been cancelled.
-                        </p>
-                      )}
+                        {isCancelled && (
+                          <span className="text-sm font-medium text-[#9B5144]">
+                            Order Cancelled
+                          </span>
+                        )}
+
+                        <Link
+                          to="/products"
+                          style={{ color: "#E5D9C9" }}
+                          className="inline-flex items-center gap-2 bg-[#342820] px-5 py-3 text-sm font-medium text-[#FAF7F1] transition hover:bg-[#59483B]"
+                        >
+                          Shop More <ArrowRight size={15} />
+                        </Link>
+                      </div>
                     </div>
+
                   </div>
-                </div>
+                </article>
               );
             })}
           </div>

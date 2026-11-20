@@ -69,12 +69,28 @@ export async function updateUser(userId, updatedData) {
 
   return response.json();
 }
-export async function getUserById(userId) {
-  const response = await fetch(`${API_URL}/users/${userId}`);
 
-  if (!response.ok) {
-    throw new Error("Unable to verify your account.");
+// Get a single user by ID
+export async function getUserById(userId) {
+  const response = await fetch(
+    `${API_URL}/users/${encodeURIComponent(userId)}`
+  );
+
+  // User no longer exists
+  if (response.status === 404) {
+    return null;
   }
 
-  return response.json();
+  if (!response.ok) {
+    throw new Error("Unable to verify account status.");
+  }
+
+  const user = await response.json();
+
+  // Return only the information needed for verification.
+  // Do not put the password in the query cache.
+  return {
+    id: user.id,
+    blocked: user.blocked === true,
+  };
 }
